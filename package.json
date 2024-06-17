@@ -1,0 +1,41 @@
+{
+  "name": "c3-framework",
+  "version": "1.0.0",
+  "description": "Construct 3 Addon Development Framework",
+  "type": "module",
+  "bin": {
+    "alfred": "cli.js"
+  },
+  "types": "index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MasterPose/c3-framework"
+  },
+  "scripts": {},
+  "author": {
+    "name": "Luan Himmlisch",
+    "email": "luan@himmlisch.com.mx",
+    "url": "https://github.com/LuanHimmlisch"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "acorn": "^8.12.0",
+    "acorn-typescript": "^1.4.13",
+    "acorn-walk": "^8.3.3",
+    "adm-zip": "^0.5.14",
+    "c3ide2-types": "^1.0.0",
+    "chokidar": "^3.6.0",
+    "cors": "^2.8.5",
+    "dot-path-value": "^0.0.10",
+    "esbuild": "^0.21.5",
+    "escodegen": "^2.1.0",
+    "express": "^4.19.2",
+    "mime": "^4.0.3"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.5",
+    "@types/cors": "^2.8.17",
+    "@types/escodegen": "^0.0.10",
+    "@types/express": "^4.17.21"
+  }
+}
