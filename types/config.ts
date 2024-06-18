@@ -32,7 +32,7 @@ export interface BuiltAddonConfig extends AddonConfig {
 };
 
 export interface BuildConfig {
-    minify?: string,
+    minify?: boolean,
     host?: string,
     port?: number,
     sourcePath?: string,
@@ -41,5 +41,8 @@ export interface BuildConfig {
     runtimeScript?: string,
     langPath?: string,
     libPath?: string,
-    defPath: string
+    defPath?: string,
+    exportPath?: string,
+    examplesPath?: string,
+    distPath?: string,
 }

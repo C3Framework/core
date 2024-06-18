@@ -54,7 +54,7 @@ function removeFilesRecursively(dir) {
 }
 
 function emptyFolder() {
-    const exportPath = filepath("./export");
+    const exportPath = filepath(_buildConfig.exportPath);
 
     if (fs.existsSync(exportPath)) {
         removeFilesRecursively(exportPath);
@@ -64,9 +64,9 @@ function emptyFolder() {
 function ensureFoldersExists() {
     emptyFolder();
 
-    fs.mkdirSync(filepath("./export"));
-    fs.mkdirSync(filepath("./export/lang"));
-    fs.mkdirSync(filepath("./export/c3runtime"));
+    fs.mkdirSync(filepath(_buildConfig.exportPath));
+    fs.mkdirSync(filepath(_buildConfig.exportPath, "lang"));
+    fs.mkdirSync(filepath(_buildConfig.exportPath, "c3runtime"));
 }
 
 function createEmptyFiles() {
@@ -79,7 +79,7 @@ function createEmptyFiles() {
     ];
 
     emptyFiles.forEach((file) => {
-        fs.closeSync(fs.openSync(filepath(`./export/c3runtime/${file}`), "w"));
+        fs.closeSync(fs.openSync(filepath(_buildConfig.exportPath, `c3runtime/${file}`), "w"));
     });
 }
 
@@ -218,7 +218,7 @@ function getImportTypeByExtension(ext) {
 
 async function processDependencyFile(config, filename, ext, type) {
     const input = filepath(config.libPath, filename);
-    let output = filepath('./export', '/c3runtime/libs', filename);
+    let output = filepath(_buildConfig.exportPath, 'c3runtime/libs', filename);
     output = output.replace(/\.ts$/, '.js');
 
     if (ext === 'ts') {
@@ -238,7 +238,7 @@ function getTypeDefinitions(config) {
         .filter((v => v.endsWith('.d.ts')))
         .map((filename) => {
             const defPath = config.defPath;
-            const exportPath = './export';
+            const exportPath = config.exportPath;
 
             const input = filepath(defPath, '/', filename);
             const output = input.replace(filepath(defPath), filepath(exportPath, 'c3runtime/'))
@@ -256,7 +256,7 @@ function getTypeDefinitions(config) {
  * @param {import('./index.js').BuiltAddonConfig} addon 
  */
 async function getFileListFromConfig(config, addon) {
-    const exportPath = filepath('./export');
+    const exportPath = filepath(config.exportPath);
     const libPath = filepath(config.libPath);
     const copyConfig = addon.fileDependencies;
 
@@ -647,26 +647,32 @@ function acesFromConfig(config) {
     return aces;
 }
 
+/**
+ * @param {import('./types/config.js').BuildConfig} config 
+ */
 function distribute(config) {
     // zip the content of the export folder and name it with the plugin id and version and use .c3addon as extension
     const zip = new AdmZip();
-    zip.addLocalFolder("./export/c3runtime", "c3runtime");
-    zip.addLocalFolder("./export/lang", "lang");
+    zip.addLocalFolder(filepath(config.exportPath, "c3runtime"), "c3runtime");
+    zip.addLocalFolder(filepath(config.exportPath, "lang"), "lang");
 
     // for each remaining file in the root export folder
-    fs.readdirSync("./export").forEach((file) => {
+    fs.readdirSync(filepath(config.exportPath)).forEach((file) => {
         // if the file is not the c3runtime or lang folder
         if (file !== "c3runtime" && file !== "lang") {
             // add it to the zip
-            zip.addLocalFile(`./export/${file}`, "");
+            zip.addLocalFile(filepath(config.exportPath, file), "");
         }
     });
 
+    const distPath = filepath(config.distPath);
+
     // if dist folder does not exist, create it
-    if (!fs.existsSync("./dist")) {
-        fs.mkdirSync("./dist");
+    if (!fs.existsSync(distPath)) {
+        fs.mkdirSync(distPath);
     }
-    zip.writeZip(`./dist/${config.id}-${config.version}.c3addon`);
+
+    zip.writeZip(filepath(config.distPath, `${config.id}-${config.version}.c3addon`));
 }
 
 export async function readAddonConfig(tsAddonConfig = '', { loader = 'ts' } = {}) {
@@ -922,6 +928,7 @@ function parseAces(config) {
     };
 }
 
+/** @type {import('./types/config.js').BuildConfig} */
 let _buildConfig;
 
 /** @returns {Promise<import('./index.js').BuildConfig | {}>} */
@@ -940,7 +947,10 @@ async function loadBuildConfig() {
         libPath: 'src/libs',
         addonScript: 'addon.ts',
         runtimeScript: 'runtime.ts',
-        defPath: 'src/'
+        defPath: 'src/',
+        exportPath: 'export/',
+        examplesPath: 'examples/',
+        distPath: 'dist/',
     };
 
     const configPath = filepath('./c3.config.js');
@@ -976,17 +986,17 @@ async function build() {
 
     const main = await parseFile(filepath(config.sourcePath, config.runtimeScript), config, [parseAces(config)]);
 
-    fs.writeFileSync(filepath("./export/c3runtime/behavior.js"), main);
-    fs.writeFileSync(filepath("./export/aces.json"), JSON.stringify(acesFromConfig(aces), null, 2));
+    fs.writeFileSync(filepath(config.exportPath, "c3runtime/behavior.js"), main);
+    fs.writeFileSync(filepath(config.exportPath, "aces.json"), JSON.stringify(acesFromConfig(aces), null, 2));
 
     const langs = langFromConfig(config, addonJson, aces);
 
     for (const lang in langs) {
         const langFile = langs[lang];
-        fs.writeFileSync(filepath("./export/lang/", lang + ".json"), JSON.stringify(langFile, null, 2));
+        fs.writeFileSync(filepath(config.exportPath, "lang/", lang + ".json"), JSON.stringify(langFile, null, 2));
     }
 
-    fs.writeFileSync(filepath("./export/addon.json"), JSON.stringify(await addonFromConfig(config, addonJson), null, 2));
+    fs.writeFileSync(filepath(config.exportPath, "addon.json"), JSON.stringify(await addonFromConfig(config, addonJson), null, 2));
 
     await Promise.all(
         addonJson.editorScripts.map(async (v) => {
@@ -998,7 +1008,7 @@ async function build() {
             const jsPath = v.trim().replace(/\.ts$/, '.js');
 
             const path = filepath(config.sourcePath, tsPath);
-            const outpath = filepath('./export', jsPath);
+            const outpath = filepath(config.exportPath, jsPath);
 
             return await parseFile(path, config).then((editor) => {
                 return fs.writeFileSync(outpath, editor, { encoding: 'utf-8' });
@@ -1007,9 +1017,9 @@ async function build() {
     );
 
     if (addonJson.icon) {
-        fs.copyFileSync(filepath("./src/" + addonJson.icon), filepath("./export/" + addonJson.icon));
+        fs.copyFileSync(filepath(config.sourcePath, addonJson.icon), filepath(config.exportPath, addonJson.icon));
     } else {
-        fs.copyFileSync(filepath("./src/icon.svg"), filepath("./export/icon.svg"));
+        fs.copyFileSync(filepath(config.sourcePath, "icon.svg"), filepath(config.exportPath, "icon.svg"));
     }
 
 }
@@ -1027,7 +1037,14 @@ async function runServer(callback = async () => { }) {
 
     await callback();
 
-    const watcher = chokidar.watch("src", {
+    const watchDirectories = [...new Set([
+        config.sourcePath,
+        config.langPath,
+        config.defPath,
+        config.libPath,
+    ])];
+
+    const watcher = chokidar.watch(watchDirectories, {
         ignored: /(^|[\/\\])\../,
         persistent: true,
     });
@@ -1058,7 +1075,7 @@ ${path()}
     app.use(cors());
 
     // Serve static files from the 'export' directory
-    app.use(express.static("export"));
+    app.use(express.static(config.exportPath));
 
     // Start the server
     function tryListen() {
