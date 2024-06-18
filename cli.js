@@ -878,7 +878,7 @@ function parseAddonConfig(config) {
             build.onLoad({ filter: addonScript }, async (config) => {
                 if (addonJson) {
                     return {
-                        contents: "export default " + JSON.stringify(addonJson, null, 4)
+                        contents: "export default " + JSON.stringify(addonJson)
                     }
                 }
 
