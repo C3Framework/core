@@ -350,7 +350,7 @@ function loadLanguage(lang) {
 }
 
 function __(key) {
-    return getByPath(_langLoaded[_activeLang] ?? {}, key) ?? key;;
+    return getByPath(_langLoaded[_activeLang] ?? _langLoaded[_buildConfig.defaultLang] ?? {}, key) ?? key;;
 }
 
 function langFromConfig(config, addon, aces) {
