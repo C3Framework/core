@@ -649,8 +649,9 @@ function acesFromConfig(config) {
 
 /**
  * @param {import('./types/config.js').BuildConfig} config 
+ * @param {import('./types/config.js').BuiltAddonConfig} addon
  */
-function distribute(config) {
+function distribute(config, addon) {
     // zip the content of the export folder and name it with the plugin id and version and use .c3addon as extension
     const zip = new AdmZip();
     zip.addLocalFolder(filepath(config.exportPath, "c3runtime"), "c3runtime");
@@ -672,7 +673,7 @@ function distribute(config) {
         fs.mkdirSync(distPath);
     }
 
-    zip.writeZip(filepath(config.distPath, `${config.id}-${config.version}.c3addon`));
+    zip.writeZip(filepath(config.distPath, `${addon.id}-${addon.version}.c3addon`));
 }
 
 export async function readAddonConfig(tsAddonConfig = '', { loader = 'ts' } = {}) {
@@ -1109,6 +1110,6 @@ if (devBuild) {
     });
 } else {
     await build().then(() => {
-        distribute(addonJson);
+        distribute(_buildConfig, addonJson);
     });
 }
