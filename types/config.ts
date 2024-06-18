@@ -1,6 +1,7 @@
 import * as C3Ide2 from "c3ide2-types";
 
 export interface AddonConfig extends C3Ide2.ProjectAddon {
+    addonType: "behavior" | "plugin";
     editorScripts?: string[];
     properties: C3Ide2.Property[];
     aceCategories: {
@@ -13,18 +14,62 @@ export interface AddonConfig extends C3Ide2.ProjectAddon {
         | "external-runtime-script"
         | "external-css"
     },
-    typeDefs?: string[],
     info: {
         Set: {
-            IsOnlyOneAllowed: boolean;
-            CanBeBundled: boolean;
-            IsDeprecated: boolean;
+            CanBeBundled?: boolean;
+            IsDeprecated?: boolean;
+        }
+    }
+}
+
+export interface BehaviorConfig extends AddonConfig {
+    addonType: "behavior",
+    info: {
+        Set: {
+            IsOnlyOneAllowed?: boolean;
+            CanBeBundled?: boolean;
+            IsDeprecated?: boolean;
+        };
+    };
+}
+
+export interface PluginConfig extends AddonConfig {
+    addonType: "plugin",
+    type:
+    | "object"
+    | "world"
+    | "dom";
+    info: {
+        defaultImageUrl?: string;
+        Set: {
+            IsResizable?: boolean;
+            IsRotatable?: boolean;
+            Is3D?: boolean;
+            HasImage?: boolean;
+            IsTiled?: boolean;
+            SupportsZElevation?: boolean;
+            SupportsColor?: boolean;
+            SupportsEffects?: boolean;
+            MustPreDraw?: boolean;
+            IsSingleGlobal?: boolean;
+            CanBeBundled?: boolean;
+            IsDeprecated?: boolean;
+            GooglePlayServicesEnabled?: boolean;
+        };
+        AddCommonACEs: {
+            Position?: boolean;
+            SceneGraph?: boolean;
+            Size?: boolean;
+            Angle?: boolean;
+            Appearance?: boolean;
+            ZOrder?: boolean;
         };
     };
 }
 
 export interface BuiltAddonConfig extends AddonConfig {
-    Aces: {
+    typeDefs?: string[],
+    Aces?: {
         actions: any,
         expressions: any,
         conditions: any

@@ -194,23 +194,25 @@ export function injectAces(addonBase: C3AddonBase & { [key: string]: any }, conf
     addonBase.Cnds = {};
     addonBase.Exps = {};
 
-    Object.keys(config.Aces.actions).forEach((key) => {
-        const ace = config.Aces.actions[key];
+    const aces = config.Aces!;
+
+    Object.keys(aces.actions).forEach((key) => {
+        const ace = aces.actions[key];
         addonBase.Acts[Utils.camel(key)] = function (...args: any) {
             return ace(this).call(this, ...args);
         };
     });
 
-    Object.keys(config.Aces.conditions).forEach((key) => {
-        const ace = config.Aces.conditions[key];
+    Object.keys(aces.conditions).forEach((key) => {
+        const ace = aces.conditions[key];
 
         addonBase.Cnds[Utils.camel(key)] = function (...args: any) {
             return ace(this).call(this, ...args);
         };
     });
 
-    Object.keys(config.Aces.expressions).forEach((key) => {
-        const ace = config.Aces.expressions[key];
+    Object.keys(aces.expressions).forEach((key) => {
+        const ace = aces.expressions[key];
         addonBase.Exps[Utils.camel(key)] = function (...args: any) {
             return ace(this).call(this, ...args);
         };
