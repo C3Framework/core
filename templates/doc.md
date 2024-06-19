@@ -6,14 +6,14 @@
 
 Author: {{$author}} <br>
 Website: [{{$website}}]({{$website}}) <br>
-Addon Url: [{{$authorUrl}}]({{$authorUrl}}) <br>
+Addon Url: [{{$addonUrl}}]({{$addonUrl}}) <br>
 Download Latest Version : [Version: {{$version}}]({{$githubUrl}}/releases/latest) <br>
 
 <br>
 
 <sub>
 
-Made using [c3-framework](https://github.com/MasterPose/c3-framework) 
+Made using [c3-framework]({{$frameworkUrl}}) 
 
 </sub>
 

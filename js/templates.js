@@ -1,6 +1,8 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { escapeRegExp } from './utils.js';
 
+/** @returns {string} */
 export function template(path, opts = {}) {
     path = join(import.meta.dirname, '../templates', path);
 
@@ -11,7 +13,8 @@ export function template(path, opts = {}) {
     for (const key in opts) {
         const value = opts[key];
         const search = `{{$${key}}}`;
-        replaced = replaced.replace(search, value);
+
+        replaced = replaced.replace(new RegExp(escapeRegExp(search), 'g'), value);
     }
 
     return replaced;

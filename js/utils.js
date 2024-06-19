@@ -45,3 +45,7 @@ export function removeFilesRecursively(dir) {
         fs.rmdirSync(dir);
     }
 }
+
+export function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
