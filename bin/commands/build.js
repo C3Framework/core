@@ -28,10 +28,12 @@ import {
     TS_Types,
 } from '../../js/constants.js';
 
+import { buildConfig as bc, loadBuildConfig } from '../../js/config.js';
+
 const tsConfig = fs.readFileSync(filepath('./tsconfig.json')).toString('utf8');
 
 function emptyExport() {
-    const exportPath = filepath(_buildConfig.exportPath);
+    const exportPath = filepath(bc().exportPath);
 
     if (fs.existsSync(exportPath)) {
         removeFilesRecursively(exportPath);
@@ -41,9 +43,11 @@ function emptyExport() {
 function ensureFoldersExists() {
     emptyExport();
 
-    fs.mkdirSync(filepath(_buildConfig.exportPath));
-    fs.mkdirSync(filepath(_buildConfig.exportPath, "lang"));
-    fs.mkdirSync(filepath(_buildConfig.exportPath, "c3runtime"));
+    const exportPath = bc().exportPath;
+
+    fs.mkdirSync(filepath(exportPath));
+    fs.mkdirSync(filepath(exportPath, "lang"));
+    fs.mkdirSync(filepath(exportPath, "c3runtime"));
 }
 
 function createEmptyFiles() {
@@ -56,7 +60,7 @@ function createEmptyFiles() {
     ];
 
     emptyFiles.forEach((file) => {
-        fs.closeSync(fs.openSync(filepath(_buildConfig.exportPath, `c3runtime/${file}`), "w"));
+        fs.closeSync(fs.openSync(filepath(bc().exportPath, `c3runtime/${file}`), "w"));
     });
 }
 
@@ -156,7 +160,7 @@ function getImportTypeByExtension(ext) {
 
 async function processDependencyFile(config, filename, ext, type) {
     const input = filepath(config.libPath, filename);
-    let output = filepath(_buildConfig.exportPath, 'c3runtime/libs', filename);
+    let output = filepath(bc().exportPath, 'c3runtime/libs', filename);
     output = output.replace(/\.ts$/, '.js');
 
     if (ext === 'ts') {
@@ -169,7 +173,7 @@ async function processDependencyFile(config, filename, ext, type) {
 }
 
 /**
- * @param {import('../index.js').BuildConfig} config 
+ * @param {BuildConfig} config 
  */
 function getTypeDefinitions(config) {
     const definitions = fs.readdirSync(filepath(config.defPath))
@@ -190,13 +194,14 @@ function getTypeDefinitions(config) {
 }
 
 /**
- * @param {import('../index.js').BuildConfig} config 
+ * @param {BuildConfig} config 
  * @param {import('../index.js').BuiltAddonConfig} addon 
  */
 async function getFileListFromConfig(config, addon) {
     const exportPath = filepath(config.exportPath);
     const libPath = filepath(config.libPath);
-    const copyConfig = addon.fileDependencies;
+    const copyConfig = addon?.fileDependencies ?? {};
+
 
     const files = await fs.readdirSync(libPath).reduce(async (objP, filename) => {
         const obj = await objP;
@@ -237,7 +242,7 @@ async function getFileListFromConfig(config, addon) {
 }
 
 /**
- * @param {import('../index.js').BuildConfig} config 
+ * @param {BuildConfig} config 
  * @param {import('../index.js').BuiltAddonConfig} addon 
  */
 async function addonFromConfig(config, addon) {
@@ -273,7 +278,7 @@ async function addonFromConfig(config, addon) {
 let _activeLang;
 let _langLoaded = {};
 function loadLanguage(lang) {
-    const path = filepath(_buildConfig.langPath, lang + ".json");
+    const path = filepath(bc().langPath, lang + ".json");
     _activeLang = lang;
 
     if (_langLoaded[lang]) {
@@ -288,7 +293,7 @@ function loadLanguage(lang) {
 }
 
 function __(key) {
-    return getByPath(_langLoaded[_activeLang] ?? _langLoaded[_buildConfig.defaultLang] ?? {}, key) ?? key;;
+    return getByPath(_langLoaded[_activeLang] ?? _langLoaded[bc().defaultLang] ?? {}, key) ?? key;;
 }
 
 function langFromConfig(config, addon, aces) {
@@ -586,8 +591,8 @@ function acesFromConfig(config) {
 }
 
 /**
- * @param {import('../types/config.js').BuildConfig} config 
- * @param {import('../types/config.js').BuiltAddonConfig} addon
+ * @param {import('../../types/config.js').BuildConfig} config 
+ * @param {import('../../types/config.js').BuiltAddonConfig} addon
  */
 function distribute(config, addon) {
     // zip the content of the export folder and name it with the plugin id and version and use .c3addon as extension
@@ -637,11 +642,11 @@ export async function readAddonConfig(tsAddonConfig = '', { loader = 'ts' } = {}
     }
 
     // * Dependencies files
-    const dependencies = await getFileListFromConfig(_buildConfig, config);
+    const dependencies = await getFileListFromConfig(bc(), config);
     config.fileDependencies = dependencies;
 
     // * Type definitions
-    const typeDefs = getTypeDefinitions(_buildConfig);
+    const typeDefs = getTypeDefinitions(bc());
 
     config.typeDefs = typeDefs;
 
@@ -804,7 +809,7 @@ function parseScript(ts) {
 }
 
 /**
- * @param {import('../index.js').BuildConfig} config  
+ * @param {import('../../types/config.js').BuildConfig} config  
  * @returns {import('esbuild').Plugin} 
  */
 function parseAddonConfig(config) {
@@ -843,7 +848,7 @@ function parseAddonConfig(config) {
 }
 
 /**
- * @param {import('../index.js').BuildConfig} config  
+ * @param {BuildConfig} config  
  * @returns {import('esbuild').Plugin} 
  */
 function parseAces(config) {
@@ -865,41 +870,6 @@ function parseAces(config) {
 
         }
     };
-}
-
-/** @type {import('../types/config.js').BuildConfig} */
-let _buildConfig;
-
-/** @returns {Promise<import('../index.js').BuildConfig | {}>} */
-async function loadBuildConfig() {
-    if (_buildConfig) {
-        return _buildConfig;
-    }
-
-    const defaultConfig = {
-        minify: true,
-        host: 'http://localhost',
-        port: 3000,
-        defaultLang: 'en-US',
-        sourcePath: 'src/',
-        langPath: 'src/lang',
-        libPath: 'src/libs',
-        addonScript: 'addon.ts',
-        runtimeScript: 'runtime.ts',
-        defPath: 'src/',
-        exportPath: 'export/',
-        examplesPath: 'examples/',
-        distPath: 'dist/',
-    };
-
-    const configPath = filepath('./c3.config.js');
-    if (fs.existsSync(configPath)) {
-        const loadedConfig = await import(configPath).then(v => v.default);
-        _buildConfig = { ...defaultConfig, ...loadedConfig };
-        return _buildConfig;
-    }
-
-    return _buildConfig = defaultConfig;
 }
 
 async function parseFile(file = '', config = {}, plugins = []) {
@@ -993,7 +963,7 @@ async function runServer(callback = async () => { }, {
     });
 
     function message() {
-        process.stdout.write('\x1Bc');
+        // process.stdout.write('\x1Bc');
         console.log(`|===| Alfred Butler |===|
 
 Server is running at ${host}:${port}
@@ -1055,6 +1025,6 @@ export default async function (devBuild = false, serverOpts = {}) {
     }
 
     await build().then(() => {
-        distribute(_buildConfig, addonJson);
+        distribute(bc(), addonJson);
     });
 }
