@@ -143,9 +143,10 @@ export function registerEditorClass(inst: any, SDK: any, config: BuiltAddonConfi
         );
     }
 
-    if (config.fileDependencies) {
-        Object.keys(config.fileDependencies).forEach((filename: any) => {
-            const type = config.fileDependencies[filename];
+    if (config.fileDependencies?.length) {
+        const fileDependencies = config.fileDependencies!;
+        Object.keys(fileDependencies).forEach((filename: any) => {
+            const type = fileDependencies[filename];
             const dependency = {
                 filename,
                 type

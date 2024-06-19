@@ -7,15 +7,15 @@ export interface AddonConfig extends C3Ide2.ProjectAddon {
     aceCategories: {
         [key: string]: string;
     };
-    fileDependencies: {
+    fileDependencies?: {
         [key: string]: "copy-to-output"
         | "inline-script"
         | "external-dom-script"
         | "external-runtime-script"
         | "external-css"
     },
-    info: {
-        Set: {
+    info?: {
+        Set?: {
             CanBeBundled?: boolean;
             IsDeprecated?: boolean;
         }
@@ -24,8 +24,8 @@ export interface AddonConfig extends C3Ide2.ProjectAddon {
 
 export interface BehaviorConfig extends AddonConfig {
     addonType: "behavior",
-    info: {
-        Set: {
+    info?: {
+        Set?: {
             IsOnlyOneAllowed?: boolean;
             CanBeBundled?: boolean;
             IsDeprecated?: boolean;
@@ -39,9 +39,9 @@ export interface PluginConfig extends AddonConfig {
     | "object"
     | "world"
     | "dom";
-    info: {
+    info?: {
         defaultImageUrl?: string;
-        Set: {
+        Set?: {
             IsResizable?: boolean;
             IsRotatable?: boolean;
             Is3D?: boolean;
@@ -56,7 +56,7 @@ export interface PluginConfig extends AddonConfig {
             IsDeprecated?: boolean;
             GooglePlayServicesEnabled?: boolean;
         };
-        AddCommonACEs: {
+        AddCommonACEs?: {
             Position?: boolean;
             SceneGraph?: boolean;
             Size?: boolean;
