@@ -1,6 +1,5 @@
 import * as esbuild from 'esbuild';
 import fs from 'fs';
-import path from 'path';
 import * as acorn from 'acorn'
 import tsPlugin from 'acorn-typescript'
 import AdmZip from 'adm-zip';
@@ -11,26 +10,23 @@ import escodegen from 'escodegen';
 import { getByPath } from 'dot-path-value';
 
 import {
-    trimPathSlashes,
     filepath,
-    fileExtension,
-    writeFileRecursively,
     removeFilesRecursively,
     titleCase
 } from '../../js/utils.js';
 
 import {
-    DEFAULT_IMPORT_TYPE,
     ACE_TYPES,
     ACE_DECORATORS,
     PARAM_DECORATOR,
     ALL_DECORATORS,
     TS_Types,
+    aceDict,
+    aceList,
 } from '../../js/constants.js';
 
-import { buildConfig as bc, loadBuildConfig } from '../../js/config.js';
-
-const tsConfig = fs.readFileSync(filepath('./tsconfig.json')).toString('utf8');
+import { buildConfig as bc, loadBuildConfig, tsConfig } from '../../js/config.js';
+import { addonJson, buildFile, resetParsedConfig } from '../../js/parser.js';
 
 function emptyExport() {
     const exportPath = filepath(bc().exportPath);
@@ -132,113 +128,6 @@ function formatParam(param = {}) {
         type: config.type ?? type ?? 'any',
         ...(initialValue ? { initialValue } : {})
     }
-}
-
-function aceDict() {
-    return Object.keys(ACE_TYPES).reduce((obj, k) => {
-        obj[k] = {};
-        return obj;
-    }, {});
-}
-
-function aceList() {
-    return Object.keys(ACE_TYPES).reduce((obj, k) => {
-        obj[k] = [];
-        return obj;
-    }, {});
-}
-
-function getImportTypeByExtension(ext) {
-    switch (ext) {
-        case 'css':
-            return 'external-css';
-
-        default:
-            return DEFAULT_IMPORT_TYPE;
-    }
-}
-
-async function processDependencyFile(config, filename, ext, type) {
-    const input = filepath(config.libPath, filename);
-    let output = filepath(bc().exportPath, 'c3runtime/libs', filename);
-    output = output.replace(/\.ts$/, '.js');
-
-    if (ext === 'ts') {
-        writeFileRecursively(output, await parseFile(input, config));
-        return output;
-    }
-
-    writeFileRecursively(output, fs.readFileSync(input));
-    return output;
-}
-
-/**
- * @param {BuildConfig} config 
- */
-function getTypeDefinitions(config) {
-    const definitions = fs.readdirSync(filepath(config.defPath))
-        .filter((v => v.endsWith('.d.ts')))
-        .map((filename) => {
-            const defPath = config.defPath;
-            const exportPath = config.exportPath;
-
-            const input = filepath(defPath, '/', filename);
-            const output = input.replace(filepath(defPath), filepath(exportPath, 'c3runtime/'))
-
-            writeFileRecursively(output, fs.readFileSync(input));
-
-            return trimPathSlashes(output.replace(filepath(exportPath), ''));
-        });
-
-    return definitions;
-}
-
-/**
- * @param {BuildConfig} config 
- * @param {import('../index.js').BuiltAddonConfig} addon 
- */
-async function getFileListFromConfig(config, addon) {
-    const exportPath = filepath(config.exportPath);
-    const libPath = filepath(config.libPath);
-    const copyConfig = addon?.fileDependencies ?? {};
-
-
-    const files = await fs.readdirSync(libPath).reduce(async (objP, filename) => {
-        const obj = await objP;
-        const ext = fileExtension(filename);
-        let importType;
-
-        if (copyConfig[filename]) {
-            importType = copyConfig[filename];
-            delete copyConfig[filename];
-        } else {
-            importType = getImportTypeByExtension(ext);
-        }
-
-        let output = await processDependencyFile(
-            config,
-            filename,
-            ext,
-            importType
-        );
-
-        if (path.isAbsolute(output)) {
-            output = trimPathSlashes(output.replace(exportPath, ''));
-        }
-
-        obj[output] = importType;
-        return obj;
-    }, Promise.resolve({}));
-
-    // There's a mismatch betwwen the files from libs and 
-    // the files on the config... 
-    // TODO: Check if these are remote files
-    const leftFiles = Object.keys(copyConfig);
-    if (leftFiles.length) {
-        console.warn(`Following dependency files were not found: ${leftFiles.join(', ')}`);
-    }
-
-    return files;
 }
 
 /**
@@ -619,47 +508,10 @@ function distribute(config, addon) {
     zip.writeZip(filepath(config.distPath, `${addon.id}-${addon.version}.c3addon`));
 }
 
-export async function readAddonConfig(tsAddonConfig = '', { loader = 'ts' } = {}) {
-    const getConfig = new Function(
-        esbuild.transformSync(tsAddonConfig, {
-            format: 'iife',
-            globalName: 'config',
-            loader
-        }).code + ' return config;'
-    );
-    /** @type {import('../index.js').BuiltAddonConfig} */
-    let config;
-
-    try {
-        config = getConfig().default;
-    } catch (error) {
-        throw Error("Error on reading Addon Config. Please be sure to not execute external libraries from there." + "\n" + error);
-    }
-
-    // * Remove ACEs
-    for (const key in ACE_TYPES) {
-        delete config[key];
-    }
-
-    // * Dependencies files
-    const dependencies = await getFileListFromConfig(bc(), config);
-    config.fileDependencies = dependencies;
-
-    // * Type definitions
-    const typeDefs = getTypeDefinitions(bc());
-
-    config.typeDefs = typeDefs;
-
-    return config;
-}
-
 // Collection of ACEs by group for aces.json
 let aces = {};
 // Collection of ACEs to call on runtime
-let acesRuntime = aceDict();
-
-/** @type {import('../index.js').BuiltAddonConfig} */
-let addonJson;
+export let acesRuntime = aceDict();
 
 function hasDecorators(ts = '') {
     const pattern = "@(" + ALL_DECORATORS.join('|') + ")";
@@ -803,47 +655,8 @@ function parseScript(ts) {
     return {
         contents: esbuild.transformSync(ts, {
             loader: 'ts',
-            tsconfigRaw: tsConfig,
+            tsconfigRaw: tsConfig(),
         }).code
-    }
-}
-
-/**
- * @param {import('../../types/config.js').BuildConfig} config  
- * @returns {import('esbuild').Plugin} 
- */
-function parseAddonConfig(config) {
-    const addonScript = new RegExp(filepath(config.sourcePath, config.addonScript));
-
-    return {
-        name: 'c3framework-config',
-        setup(build) {
-            build.onLoad({ filter: addonScript }, async (config) => {
-                if (addonJson) {
-                    return {
-                        contents: "export default " + JSON.stringify(addonJson)
-                    }
-                }
-
-                const content = fs.readFileSync(config.path).toString('utf-8');
-                const inject = JSON.stringify(acesRuntime, null, 4).replace(/"(\(inst\) => inst\.[a-zA-Z0-9$_]+)"/, '$1');
-                const injected = content.replace(/(export\s+default\s+)([^;]+);/, `$1{\n...($2), \n...({Aces: ${inject}})\n};`);
-                const jsConfig = esbuild.transformSync(injected, {
-                    loader: 'ts',
-                    tsconfigRaw: tsConfig,
-                }).code;
-
-                try {
-                    addonJson = await readAddonConfig(jsConfig, { loader: 'js' });
-                } catch (error) {
-                    throw Error("Error on `addonConfig.ts`. Please be sure to not execute external libraries from there." + "\n" + error);
-                }
-
-                return {
-                    contents: jsConfig
-                };
-            });
-        }
     }
 }
 
@@ -872,21 +685,6 @@ function parseAces(config) {
     };
 }
 
-async function parseFile(file = '', config = {}, plugins = []) {
-    return await esbuild.build({
-        entryPoints: [file],
-        bundle: true,
-        allowOverwrite: true,
-        plugins: [
-            parseAddonConfig(config),
-            ...plugins,
-        ],
-        write: false,
-        tsconfigRaw: tsConfig,
-        minify: config?.minify ?? true,
-    }).then(v => v.outputFiles[0].text);
-}
-
 // TODO: Abstract everything from the parser to its own parser module
 async function build() {
     const config = await loadBuildConfig();
@@ -894,7 +692,7 @@ async function build() {
     ensureFoldersExists();
     createEmptyFiles();
 
-    const main = await parseFile(filepath(config.sourcePath, config.runtimeScript), config, [parseAces(config)]);
+    const main = await buildFile(filepath(config.sourcePath, config.runtimeScript), config, [parseAces(config)]);
 
     fs.writeFileSync(filepath(config.exportPath, "c3runtime/behavior.js"), main);
     fs.writeFileSync(filepath(config.exportPath, "aces.json"), JSON.stringify(acesFromConfig(aces), null, 2));
@@ -920,7 +718,7 @@ async function build() {
             const path = filepath(config.sourcePath, tsPath);
             const outpath = filepath(config.exportPath, jsPath);
 
-            return await parseFile(path, config).then((editor) => {
+            return await buildFile(path, config).then((editor) => {
                 return fs.writeFileSync(outpath, editor, { encoding: 'utf-8' });
             });
         })
@@ -1017,7 +815,7 @@ export default async function (devBuild = false, serverOpts = {}) {
         runServer(async () => {
             aces = {};
             acesRuntime = aceDict();
-            addonJson = undefined;
+            resetParsedConfig();
 
             build();
         }, serverOpts);

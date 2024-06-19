@@ -44,3 +44,12 @@ export async function loadBuildConfig() {
 
     return _buildConfig = defaultConfig;
 }
+
+let _tsConfig;
+export function tsConfig() {
+    if (_tsConfig) {
+        return _tsConfig;
+    }
+
+    return _tsConfig = fs.readFileSync(filepath('./tsconfig.json')).toString('utf8');
+}

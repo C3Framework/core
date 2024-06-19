@@ -26,3 +26,17 @@ export const TS_Types = {
     'TSNumberKeyword': 'number',
     'TSAnyAnnotation': 'any',
 };
+
+export function aceDict() {
+    return Object.keys(ACE_TYPES).reduce((obj, k) => {
+        obj[k] = {};
+        return obj;
+    }, {});
+}
+
+export function aceList() {
+    return Object.keys(ACE_TYPES).reduce((obj, k) => {
+        obj[k] = [];
+        return obj;
+    }, {});
+}
