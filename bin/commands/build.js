@@ -21,6 +21,7 @@ import {
 import {
     filepath,
     removeFilesRecursively,
+    sleep,
     titleCase
 } from '../../js/utils.js';
 
@@ -37,6 +38,8 @@ import {
 import { buildConfig as bc, loadBuildConfig, tsConfig } from '../../js/config.js';
 import { addonJson, buildFile, resetParsedConfig } from '../../js/parser.js';
 import { __, loadLanguage, resetLoadedLangs } from '../../js/lang.js';
+import * as cli from '../../js/cli.js';
+import chalk from 'chalk';
 
 function emptyExport() {
     const exportPath = filepath(bc().exportPath);
@@ -747,14 +750,13 @@ async function runServer(callback = async () => { }, {
     });
 
     function message() {
-        // process.stdout.write('\x1Bc');
-        console.log(`|===| Alfred Butler |===|
-
-Server is running at ${host}:${port}
-
-Import addon.json path:
-${path()}
-`);
+        cli.clear();
+        cli.log(
+            cli.center(`Server is running at ${host}:${port}`),
+            '',
+            cli.center('Import addon.json path:'),
+            cli.center(path(), chalk.blueBright.underline)
+        );
     }
 
     watcher.on("change", async (path) => {
@@ -782,13 +784,14 @@ ${path()}
     }
 
     process.on("uncaughtException", function (err) {
+        cli.clear();
         if (err.code === "EADDRINUSE") {
-            console.log(`Port ${port} is already in use. Trying another port...`);
+            cli.log(cli.center(`Port ${port} is already in use. Trying another port...`, chalk.italic))
             port++;
-            tryListen();
+            sleep(500).then(() => tryListen());
         } else {
             emptyExport();
-            console.log(err);
+            cli.error(err.stack);
             process.exit(1);
         }
     });

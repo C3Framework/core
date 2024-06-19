@@ -4,6 +4,8 @@ import { readdirSync, writeFileSync } from 'fs';
 import { filepath } from "../../js/utils.js";
 import { parseAddonScript } from "../../js/parser/addonConfig.js";
 import { join } from "path";
+import * as cli from '../../js/cli.js';
+import chalk from "chalk";
 
 function getExampleList(config) {
     const examplesPath = filepath(config.examplesPath);
@@ -35,6 +37,9 @@ function getProperties(addon) {
 }
 
 export default async function () {
+    cli.clear();
+    cli.log(cli.center('Generating documentation...', chalk.italic));
+
     const config = await loadBuildConfig();
 
     /** @type {import("../../types/config.js").AddonConfig} */
@@ -58,4 +63,6 @@ export default async function () {
     md = md.replace("{{$properties}}", getProperties(addon));
 
     writeFileSync(filepath('./README.md'), md);
+
+    console.log(cli.center('Generated README.md!', chalk.blueBright.bold) + '\n');
 }
