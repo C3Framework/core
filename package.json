@@ -4,7 +4,7 @@
   "description": "Construct 3 Addon Development Framework",
   "type": "module",
   "bin": {
-    "alfred": "cli.js"
+    "alfred": "./bin/alfred.js"
   },
   "types": "index.ts",
   "repository": {
@@ -25,6 +25,7 @@
     "adm-zip": "^0.5.14",
     "c3ide2-types": "^1.0.0",
     "chokidar": "^3.6.0",
+    "commander": "^12.1.0",
     "cors": "^2.8.5",
     "dot-path-value": "^0.0.10",
     "esbuild": "^0.21.5",

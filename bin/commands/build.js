@@ -1,5 +1,3 @@
-#! /usr/bin/env node
-
 import * as esbuild from 'esbuild';
 import fs from 'fs';
 import path from 'path';
@@ -11,49 +9,28 @@ import cors from 'cors';
 import chokidar from 'chokidar';
 import escodegen from 'escodegen';
 import { getByPath } from 'dot-path-value';
-import { cwd } from 'process';
 
-const args = process.argv.slice(2);
-const devBuild = args.includes("--dev");
+import {
+    trimPathSlashes,
+    filepath,
+    fileExtension,
+    writeFileRecursively,
+    removeFilesRecursively,
+    titleCase
+} from '../../js/utils.js';
+
+import {
+    DEFAULT_IMPORT_TYPE,
+    ACE_TYPES,
+    ACE_DECORATORS,
+    PARAM_DECORATOR,
+    ALL_DECORATORS,
+    TS_Types,
+} from '../../js/constants.js';
+
 const tsConfig = fs.readFileSync(filepath('./tsconfig.json')).toString('utf8');
 
-
-function trimPathSlashes(str = '') {
-    return str.trim().replace(/^\.?(\/|\\)|(\\|\/)$/g, '');
-}
-
-function filepath(...paths) {
-    paths = path.join(...paths.map(v => trimPathSlashes(v)));
-    return path.join(cwd(), paths);
-}
-
-function fileExtension(filename = '') {
-    return filename.trim().match(/(?:\.([^.]+))?$/)[1]?.toLowerCase() ?? null;
-}
-
-function writeFileRecursively(filePath, contents) {
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, contents);
-}
-
-
-function removeFilesRecursively(dir) {
-    if (fs.existsSync(dir)) {
-        fs.readdirSync(dir).forEach(function (file) {
-            var curPath = path.join(dir, file);
-            if (fs.lstatSync(curPath).isDirectory()) {
-                // recurse
-                removeFilesRecursively(curPath);
-            } else {
-                // delete file
-                fs.unlinkSync(curPath);
-            }
-        });
-        fs.rmdirSync(dir);
-    }
-}
-
-function emptyFolder() {
+function emptyExport() {
     const exportPath = filepath(_buildConfig.exportPath);
 
     if (fs.existsSync(exportPath)) {
@@ -62,7 +39,7 @@ function emptyFolder() {
 }
 
 function ensureFoldersExists() {
-    emptyFolder();
+    emptyExport();
 
     fs.mkdirSync(filepath(_buildConfig.exportPath));
     fs.mkdirSync(filepath(_buildConfig.exportPath, "lang"));
@@ -82,43 +59,6 @@ function createEmptyFiles() {
         fs.closeSync(fs.openSync(filepath(_buildConfig.exportPath, `c3runtime/${file}`), "w"));
     });
 }
-
-function titleCase(str) {
-    return str.replace(/(?<=\w)([A-Z])/g, ' $1').replace(
-        /\w\S*/g,
-        function (txt) {
-            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        }
-    );
-}
-
-
-const ACE_TYPES = {
-    actions: 'Acts',
-    conditions: 'Cnds',
-    expressions: 'Exps',
-};
-
-const ACE_DECORATORS = {
-    Action: 'actions',
-    Condition: 'conditions',
-    Trigger: 'conditions',
-    Expression: 'expressions',
-};
-
-const PARAM_DECORATOR = 'Param';
-
-const ALL_DECORATORS = [
-    'AceClass',
-    ...Object.keys(ACE_DECORATORS),
-    PARAM_DECORATOR,
-];
-
-const TS_Types = {
-    'TSStringKeyword': 'string',
-    'TSNumberKeyword': 'number',
-    'TSAnyAnnotation': 'any',
-};
 
 function getParserType(typeArg = '') {
     let type = typeArg;
@@ -204,8 +144,6 @@ function aceList() {
     }, {});
 }
 
-const DEFAULT_IMPORT_TYPE = 'external-dom-script';
-
 function getImportTypeByExtension(ext) {
     switch (ext) {
         case 'css':
@@ -231,7 +169,7 @@ async function processDependencyFile(config, filename, ext, type) {
 }
 
 /**
- * @param {import('./index.js').BuildConfig} config 
+ * @param {import('../index.js').BuildConfig} config 
  */
 function getTypeDefinitions(config) {
     const definitions = fs.readdirSync(filepath(config.defPath))
@@ -252,8 +190,8 @@ function getTypeDefinitions(config) {
 }
 
 /**
- * @param {import('./index.js').BuildConfig} config 
- * @param {import('./index.js').BuiltAddonConfig} addon 
+ * @param {import('../index.js').BuildConfig} config 
+ * @param {import('../index.js').BuiltAddonConfig} addon 
  */
 async function getFileListFromConfig(config, addon) {
     const exportPath = filepath(config.exportPath);
@@ -299,8 +237,8 @@ async function getFileListFromConfig(config, addon) {
 }
 
 /**
- * @param {import('./index.js').BuildConfig} config 
- * @param {import('./index.js').BuiltAddonConfig} addon 
+ * @param {import('../index.js').BuildConfig} config 
+ * @param {import('../index.js').BuiltAddonConfig} addon 
  */
 async function addonFromConfig(config, addon) {
     return {
@@ -648,8 +586,8 @@ function acesFromConfig(config) {
 }
 
 /**
- * @param {import('./types/config.js').BuildConfig} config 
- * @param {import('./types/config.js').BuiltAddonConfig} addon
+ * @param {import('../types/config.js').BuildConfig} config 
+ * @param {import('../types/config.js').BuiltAddonConfig} addon
  */
 function distribute(config, addon) {
     // zip the content of the export folder and name it with the plugin id and version and use .c3addon as extension
@@ -684,7 +622,7 @@ export async function readAddonConfig(tsAddonConfig = '', { loader = 'ts' } = {}
             loader
         }).code + ' return config;'
     );
-    /** @type {import('./index.js').BuiltAddonConfig} */
+    /** @type {import('../index.js').BuiltAddonConfig} */
     let config;
 
     try {
@@ -715,7 +653,7 @@ let aces = {};
 // Collection of ACEs to call on runtime
 let acesRuntime = aceDict();
 
-/** @type {import('./index.js').BuiltAddonConfig} */
+/** @type {import('../index.js').BuiltAddonConfig} */
 let addonJson;
 
 function hasDecorators(ts = '') {
@@ -866,7 +804,7 @@ function parseScript(ts) {
 }
 
 /**
- * @param {import('./index.js').BuildConfig} config  
+ * @param {import('../index.js').BuildConfig} config  
  * @returns {import('esbuild').Plugin} 
  */
 function parseAddonConfig(config) {
@@ -905,7 +843,7 @@ function parseAddonConfig(config) {
 }
 
 /**
- * @param {import('./index.js').BuildConfig} config  
+ * @param {import('../index.js').BuildConfig} config  
  * @returns {import('esbuild').Plugin} 
  */
 function parseAces(config) {
@@ -929,10 +867,10 @@ function parseAces(config) {
     };
 }
 
-/** @type {import('./types/config.js').BuildConfig} */
+/** @type {import('../types/config.js').BuildConfig} */
 let _buildConfig;
 
-/** @returns {Promise<import('./index.js').BuildConfig | {}>} */
+/** @returns {Promise<import('../index.js').BuildConfig | {}>} */
 async function loadBuildConfig() {
     if (_buildConfig) {
         return _buildConfig;
@@ -979,6 +917,7 @@ async function parseFile(file = '', config = {}, plugins = []) {
     }).then(v => v.outputFiles[0].text);
 }
 
+// TODO: Abstract everything from the parser to its own parser module
 async function build() {
     const config = await loadBuildConfig();
 
@@ -1027,12 +966,15 @@ async function build() {
 
 let port = 3000;
 
-async function runServer(callback = async () => { }) {
+async function runServer(callback = async () => { }, {
+    port = null,
+    host = null,
+} = {}) {
     const config = await loadBuildConfig();
 
-    port = config.port;
+    port = port ?? config.port;
 
-    const host = config.host;
+    host = host ?? config.host;
 
     const path = () => `${host}:${port}/addon.json`;
 
@@ -1091,7 +1033,7 @@ ${path()}
             port++;
             tryListen();
         } else {
-            emptyFolder();
+            emptyExport();
             console.log(err);
             process.exit(1);
         }
@@ -1100,15 +1042,18 @@ ${path()}
     tryListen();
 }
 
-if (devBuild) {
-    runServer(async () => {
-        aces = {};
-        acesRuntime = aceDict();
-        addonJson = undefined;
+export default async function (devBuild = false, serverOpts = {}) {
+    if (devBuild) {
+        runServer(async () => {
+            aces = {};
+            acesRuntime = aceDict();
+            addonJson = undefined;
 
-        build();
-    });
-} else {
+            build();
+        }, serverOpts);
+        return;
+    }
+
     await build().then(() => {
         distribute(_buildConfig, addonJson);
     });
