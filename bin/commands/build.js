@@ -7,7 +7,6 @@ import express from 'express';
 import cors from 'cors';
 import chokidar from 'chokidar';
 import escodegen from 'escodegen';
-import { getByPath } from 'dot-path-value';
 
 import {
     filepath,
@@ -27,6 +26,7 @@ import {
 
 import { buildConfig as bc, loadBuildConfig, tsConfig } from '../../js/config.js';
 import { addonJson, buildFile, resetParsedConfig } from '../../js/parser.js';
+import { __, loadLanguage, resetLoadedLangs } from '../../js/lang.js';
 
 function emptyExport() {
     const exportPath = filepath(bc().exportPath);
@@ -162,27 +162,6 @@ async function addonFromConfig(config, addon) {
             ...Object.keys(addon.fileDependencies),
         ],
     };
-}
-
-let _activeLang;
-let _langLoaded = {};
-function loadLanguage(lang) {
-    const path = filepath(bc().langPath, lang + ".json");
-    _activeLang = lang;
-
-    if (_langLoaded[lang]) {
-        return _langLoaded[lang];
-    }
-
-    if (!fs.existsSync(path)) {
-        return _langLoaded[lang] = {};
-    }
-
-    return _langLoaded[lang] = JSON.parse(fs.readFileSync(path, { encoding: 'utf-8' }));
-}
-
-function __(key) {
-    return getByPath(_langLoaded[_activeLang] ?? _langLoaded[bc().defaultLang] ?? {}, key) ?? key;;
 }
 
 function langFromConfig(config, addon, aces) {
@@ -729,10 +708,7 @@ async function build() {
     } else {
         fs.copyFileSync(filepath(config.sourcePath, "icon.svg"), filepath(config.exportPath, "icon.svg"));
     }
-
 }
-
-let port = 3000;
 
 async function runServer(callback = async () => { }, {
     port = null,
@@ -776,7 +752,7 @@ ${path()}
         await callback()
             .then(() => setTimeout(() => message(), 200))
             .catch(e => console.error(e));
-        _langLoaded = {};
+        resetLoadedLangs();
     });
 
     // Create an express application
