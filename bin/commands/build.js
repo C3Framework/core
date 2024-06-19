@@ -1,5 +1,4 @@
 import * as esbuild from 'esbuild';
-import fs from 'fs';
 import * as acorn from 'acorn'
 import tsPlugin from 'acorn-typescript'
 import AdmZip from 'adm-zip';
@@ -7,6 +6,17 @@ import express from 'express';
 import cors from 'cors';
 import chokidar from 'chokidar';
 import escodegen from 'escodegen';
+
+import {
+    closeSync,
+    copyFileSync,
+    existsSync,
+    mkdirSync,
+    openSync,
+    readFileSync,
+    readdirSync,
+    writeFileSync
+} from 'fs';
 
 import {
     filepath,
@@ -31,7 +41,7 @@ import { __, loadLanguage, resetLoadedLangs } from '../../js/lang.js';
 function emptyExport() {
     const exportPath = filepath(bc().exportPath);
 
-    if (fs.existsSync(exportPath)) {
+    if (existsSync(exportPath)) {
         removeFilesRecursively(exportPath);
     }
 }
@@ -41,9 +51,9 @@ function ensureFoldersExists() {
 
     const exportPath = bc().exportPath;
 
-    fs.mkdirSync(filepath(exportPath));
-    fs.mkdirSync(filepath(exportPath, "lang"));
-    fs.mkdirSync(filepath(exportPath, "c3runtime"));
+    mkdirSync(filepath(exportPath));
+    mkdirSync(filepath(exportPath, "lang"));
+    mkdirSync(filepath(exportPath, "c3runtime"));
 }
 
 function createEmptyFiles() {
@@ -56,7 +66,7 @@ function createEmptyFiles() {
     ];
 
     emptyFiles.forEach((file) => {
-        fs.closeSync(fs.openSync(filepath(bc().exportPath, `c3runtime/${file}`), "w"));
+        closeSync(openSync(filepath(bc().exportPath, `c3runtime/${file}`), "w"));
     });
 }
 
@@ -166,7 +176,7 @@ async function addonFromConfig(config, addon) {
 
 function langFromConfig(config, addon, aces) {
     const jsonRegex = new RegExp("\\.json$");
-    const fileLangs = fs.readdirSync(filepath(config.langPath))
+    const fileLangs = readdirSync(filepath(config.langPath))
         .filter((v) => v.match(jsonRegex))
         .map((v) => v.replace(jsonRegex, ''));
 
@@ -469,7 +479,7 @@ function distribute(config, addon) {
     zip.addLocalFolder(filepath(config.exportPath, "lang"), "lang");
 
     // for each remaining file in the root export folder
-    fs.readdirSync(filepath(config.exportPath)).forEach((file) => {
+    readdirSync(filepath(config.exportPath)).forEach((file) => {
         // if the file is not the c3runtime or lang folder
         if (file !== "c3runtime" && file !== "lang") {
             // add it to the zip
@@ -480,8 +490,8 @@ function distribute(config, addon) {
     const distPath = filepath(config.distPath);
 
     // if dist folder does not exist, create it
-    if (!fs.existsSync(distPath)) {
-        fs.mkdirSync(distPath);
+    if (!existsSync(distPath)) {
+        mkdirSync(distPath);
     }
 
     zip.writeZip(filepath(config.distPath, `${addon.id}-${addon.version}.c3addon`));
@@ -650,7 +660,7 @@ function parseAces(config) {
         name: 'c3framework-aces',
         setup(build) {
             build.onLoad({ filter: parseFile }, (args) => {
-                let ts = fs.readFileSync(args.path).toString('utf-8');
+                let ts = readFileSync(args.path).toString('utf-8');
 
                 // match decorators
                 if (!hasDecorators(ts)) {
@@ -673,17 +683,17 @@ async function build() {
 
     const main = await buildFile(filepath(config.sourcePath, config.runtimeScript), config, [parseAces(config)]);
 
-    fs.writeFileSync(filepath(config.exportPath, "c3runtime/behavior.js"), main);
-    fs.writeFileSync(filepath(config.exportPath, "aces.json"), JSON.stringify(acesFromConfig(aces), null, 2));
+    writeFileSync(filepath(config.exportPath, "c3runtime/behavior.js"), main);
+    writeFileSync(filepath(config.exportPath, "aces.json"), JSON.stringify(acesFromConfig(aces), null, 2));
 
     const langs = langFromConfig(config, addonJson, aces);
 
     for (const lang in langs) {
         const langFile = langs[lang];
-        fs.writeFileSync(filepath(config.exportPath, "lang/", lang + ".json"), JSON.stringify(langFile, null, 2));
+        writeFileSync(filepath(config.exportPath, "lang/", lang + ".json"), JSON.stringify(langFile, null, 2));
     }
 
-    fs.writeFileSync(filepath(config.exportPath, "addon.json"), JSON.stringify(await addonFromConfig(config, addonJson), null, 2));
+    writeFileSync(filepath(config.exportPath, "addon.json"), JSON.stringify(await addonFromConfig(config, addonJson), null, 2));
 
     await Promise.all(
         addonJson.editorScripts.map(async (v) => {
@@ -698,15 +708,15 @@ async function build() {
             const outpath = filepath(config.exportPath, jsPath);
 
             return await buildFile(path, config).then((editor) => {
-                return fs.writeFileSync(outpath, editor, { encoding: 'utf-8' });
+                return writeFileSync(outpath, editor, { encoding: 'utf-8' });
             });
         })
     );
 
     if (addonJson.icon) {
-        fs.copyFileSync(filepath(config.sourcePath, addonJson.icon), filepath(config.exportPath, addonJson.icon));
+        copyFileSync(filepath(config.sourcePath, addonJson.icon), filepath(config.exportPath, addonJson.icon));
     } else {
-        fs.copyFileSync(filepath(config.sourcePath, "icon.svg"), filepath(config.exportPath, "icon.svg"));
+        copyFileSync(filepath(config.sourcePath, "icon.svg"), filepath(config.exportPath, "icon.svg"));
     }
 }
 
