@@ -657,7 +657,7 @@ function parseScript(ts) {
  * @returns {import('esbuild').Plugin} 
  */
 function parseAces(config) {
-    const parseFile = new RegExp("^" + filepath(config.sourcePath) + "(\\/|\\\\)\[^\\/\\\\]+\\.ts");
+    const parseFile = new RegExp("^" + filepath(config.sourcePath) + "(\\/|\\\\)[^\\/\\\\]+\\.ts");
 
     return {
         name: 'c3framework-aces',

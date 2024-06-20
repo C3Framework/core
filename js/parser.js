@@ -1,8 +1,9 @@
 import * as esbuild from 'esbuild';
 import { tsConfig } from './config.js';
 import { mutateAddonConfig, parseAddonScript } from './parser/addonConfig.js';
-import { filepath } from './utils.js';
+import { escapeRegExp, filepath } from './utils.js';
 import { acesRuntime } from '../bin/commands/build.js';
+import { off } from './cli.js';
 
 /** @type {import('../index.js').BuiltAddonConfig} */
 export let addonJson;
@@ -12,7 +13,7 @@ export let addonJson;
  * @returns {import('esbuild').Plugin} 
  */
 function parserAddon(config) {
-    const addonScript = new RegExp(filepath(config.sourcePath, config.addonScript));
+    const addonScript = new RegExp(escapeRegExp(filepath(config.sourcePath, config.addonScript)));
 
     return {
         name: 'c3framework-parser-addon',
