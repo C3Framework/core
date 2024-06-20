@@ -19,6 +19,7 @@ import {
 } from 'fs';
 
 import {
+    escapeRegExp,
     filepath,
     removeFilesRecursively,
     sleep,
@@ -657,7 +658,7 @@ function parseScript(ts) {
  * @returns {import('esbuild').Plugin} 
  */
 function parseAces(config) {
-    const parseFile = new RegExp("^" + filepath(config.sourcePath) + "(\\/|\\\\)[^\\/\\\\]+\\.ts");
+    const parseFile = new RegExp(escapeRegExp(config.sourcePath) + ".*\\.ts$");
 
     return {
         name: 'c3framework-aces',
