@@ -689,6 +689,10 @@ async function build() {
     writeFileSync(filepath(config.exportPath, "c3runtime/behavior.js"), main);
     writeFileSync(filepath(config.exportPath, "aces.json"), JSON.stringify(acesFromConfig(aces), null, 2));
 
+    if (!addonJson) {
+        throw Error(`Addon wasn't parsed properly. This may be due of not being able to find '${config.addonScript}'`);
+    }
+
     const langs = langFromConfig(config, addonJson, aces);
 
     for (const lang in langs) {
