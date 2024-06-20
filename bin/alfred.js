@@ -16,8 +16,9 @@ program.command('build')
     .option('-D, --dev', 'Runs a local server for development')
     .option('-H, --host <domain>', 'The host of the local server')
     .option('-P, --port <number>', 'The port of the local server')
+    .option('--export', 'Only builds the project without packaging')
     .action((opts) => {
-        build(!!opts.dev, { host: opts.host, port: opts.port });
+        build(!!opts.dev, { host: opts.host, port: opts.port }, { dist: !opts.export });
     });
 
 program.command('doc')

@@ -101,7 +101,13 @@ export default async function () {
     // * We call build to generate the doc from the parsed ACEs
     // * This could be refactored, to only parse the ACEs without building
 
-    await build();
+    cli.off();
+
+    await build(false, {}, {
+        distribute: false
+    });
+
+    cli.on();
 
     cli.loading('Analyzing ACEs...');
 
@@ -118,5 +124,5 @@ export default async function () {
 
     writeFileSync(filepath('./README.md'), md);
 
-    console.log(cli.center('Generated README.md!', chalk.blueBright.bold) + '\n');
+    cli.line('Generated README.md!', chalk.blueBright.bold);
 }

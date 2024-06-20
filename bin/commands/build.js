@@ -799,7 +799,9 @@ async function runServer(callback = async () => { }, {
     tryListen();
 }
 
-export default async function (devBuild = false, serverOpts = {}) {
+export default async function (devBuild = false, serverOpts = {}, {
+    dist = true
+} = {}) {
     if (devBuild) {
         runServer(async () => {
             aces = {};
@@ -811,7 +813,18 @@ export default async function (devBuild = false, serverOpts = {}) {
         return;
     }
 
+    cli.clear();
+    cli.log();
+    cli.loading('Building for production...');
+
     await build().then(() => {
-        distribute(bc(), addonJson);
+        if (dist) {
+            distribute(bc(), addonJson);
+            cli.loading('Packaging...');
+        } else {
+            cli.loading('Skipping packaging...');
+        }
     });
+
+    cli.line('Building complete!', chalk.blueBright.bold);
 }

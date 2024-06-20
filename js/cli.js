@@ -1,7 +1,19 @@
 import chalk from "chalk";
 import windowSize from "window-size";
 
+let enabled = true;
+
+export function on() {
+    enabled = true;
+}
+
+export function off() {
+    enabled = false;
+}
+
 export function clear() {
+    if (!enabled) return;
+
     process.stdout.write('\x1Bc');
 }
 
@@ -20,7 +32,13 @@ export function center(value, style = null) {
 }
 
 export function loading(str = '') {
-    console.log(center(str, chalk.italic) + "\n");
+    line(str, chalk.italic);
+}
+
+export function line(str, style = null) {
+    if (!enabled) return;
+
+    console.log(center(str, style) + "\n");
 }
 
 export function header() {
@@ -28,15 +46,18 @@ export function header() {
 }
 
 export function log(...value) {
-    console.log(
-        [
-            "",
-            header(),
-            "",
-            ...value,
-            ""
-        ].join("\n")
-    );
+    if (!enabled) return;
+    let msg = [
+        "",
+        header(),
+        "",
+    ];
+
+    if (value.length) {
+        msg = [...msg, ...value, ""];
+    }
+
+    console.log(msg.join("\n"));
 }
 
 export function error(value) {
