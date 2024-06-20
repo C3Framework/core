@@ -1,6 +1,6 @@
 import { cwd } from 'process';
 import fs from 'fs';
-import path from 'path';
+import { dirname, join } from 'path';
 
 export function titleCase(str) {
     return str.replace(/(?<=\w)([A-Z])/g, ' $1').replace(
@@ -16,8 +16,10 @@ export function trimPathSlashes(str = '') {
 }
 
 export function filepath(...paths) {
-    paths = path.join(...paths.map(v => trimPathSlashes(v)));
-    return path.join(cwd(), paths);
+    paths = join(...paths.map(v => trimPathSlashes(v)));
+    let path = join(cwd(), paths);
+
+    return path;
 }
 
 export function fileExtension(filename = '') {
@@ -25,7 +27,7 @@ export function fileExtension(filename = '') {
 }
 
 export function writeFileRecursively(filePath, contents) {
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.mkdirSync(dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, contents);
 }
 
@@ -33,7 +35,7 @@ export function writeFileRecursively(filePath, contents) {
 export function removeFilesRecursively(dir) {
     if (fs.existsSync(dir)) {
         fs.readdirSync(dir).forEach(function (file) {
-            var curPath = path.join(dir, file);
+            var curPath = join(dir, file);
             if (fs.lstatSync(curPath).isDirectory()) {
                 // recurse
                 removeFilesRecursively(curPath);
