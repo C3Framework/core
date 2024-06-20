@@ -40,3 +40,8 @@ export function aceList() {
         return obj;
     }, {});
 }
+
+export const PLURAL_ADDON = {
+    behavior: 'behaviors',
+    plugin: 'plugins',
+};

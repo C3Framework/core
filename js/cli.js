@@ -19,6 +19,10 @@ export function center(value, style = null) {
     return pad(style ? style(value) : value, padAmount);
 }
 
+export function loading(str = '') {
+    console.log(center(str, chalk.italic) + "\n");
+}
+
 export function header() {
     return center('Alfred Butler', chalk.black.bgYellowBright.bold);
 }

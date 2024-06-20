@@ -1,11 +1,13 @@
 import { loadBuildConfig } from "../../js/config.js";
 import { template } from "../../js/templates.js";
-import { readdirSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'fs';
 import { filepath } from "../../js/utils.js";
 import { parseAddonScript } from "../../js/parser/addonConfig.js";
 import { join } from "path";
 import * as cli from '../../js/cli.js';
 import chalk from "chalk";
+import build from "./build.js";
+import { PLURAL_ADDON } from "../../js/constants.js";
 
 function getExampleList(config) {
     const examplesPath = filepath(config.examplesPath);
@@ -36,9 +38,41 @@ function getProperties(addon) {
     return addon.properties.map((property) => `| ${property.name} | ${property.desc} | ${property.type} |`).join("\n");
 }
 
+function getAces(aces, lang) {
+    const get = (type) => {
+        const line = [];
+        Object.keys(aces).forEach(categoryKey => {
+            const category = aces[categoryKey];
+
+            category[type].forEach((ace) => {
+                const aceLang = lang[type][ace.id];
+
+                let paramString = "";
+                if (ace.params) {
+                    ace.params.forEach((param) => {
+                        const paramLang = aceLang.params[param.id];
+                        paramString += `${paramLang.name} *(${param.type})* <br>`;
+                    });
+                }
+
+                line.push(
+                    `| ${aceLang['list-name']} | ${aceLang['description']} | ${paramString} |`
+                );
+            });
+        });
+        return line;
+    };
+
+    const actions = get('actions');
+    const conditions = get('conditions');
+    const expressions = get('expressions');
+
+    return [actions, conditions, expressions];
+}
+
 export default async function () {
     cli.clear();
-    cli.log(cli.center('Generating documentation...', chalk.italic));
+    cli.log(cli.center('Starting generation...', chalk.italic));
 
     const config = await loadBuildConfig();
 
@@ -61,6 +95,26 @@ export default async function () {
 
     md = md.replace("{{$examples}}", getExampleList(config));
     md = md.replace("{{$properties}}", getProperties(addon));
+
+    cli.loading('Building project...');
+
+    // * We call build to generate the doc from the parsed ACEs
+    // * This could be refactored, to only parse the ACEs without building
+
+    await build();
+
+    cli.loading('Analyzing ACEs...');
+
+    const lang = JSON.parse(readFileSync(filepath(config.exportPath, 'lang/', config.defaultLang + ".json"), { encoding: 'utf-8' }));
+    const aces = JSON.parse(readFileSync(filepath(config.exportPath, "aces.json"), { encoding: 'utf-8' }));
+
+    const langAddon = lang['text'][PLURAL_ADDON[addon.addonType]][addon.id.toLowerCase()];
+
+    const [actions, conditions, expressions] = getAces(aces, langAddon);
+
+    md = md.replace("{{$actions}}", actions.join("\n"));
+    md = md.replace("{{$conditions}}", conditions.join("\n"));
+    md = md.replace("{{$expressions}}", expressions.join("\n"));
 
     writeFileSync(filepath('./README.md'), md);
 
