@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'url';
 import { filepath } from './utils.js';
 import fs from 'fs';
 
@@ -37,7 +38,7 @@ export async function loadBuildConfig() {
 
     const configPath = filepath('./c3.config.js');
     if (fs.existsSync(configPath)) {
-        const loadedConfig = await import(configPath).then(v => v.default);
+        const loadedConfig = await import(pathToFileURL(configPath)).then(v => v.default);
         _buildConfig = { ...defaultConfig, ...loadedConfig };
         return _buildConfig;
     }
