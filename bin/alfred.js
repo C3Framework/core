@@ -3,13 +3,18 @@
 import { Command } from "commander";
 import build from "./commands/build.js";
 import doc from "./commands/doc.js";
+import home from "./commands/home.js";
 
 const program = new Command();
+const version = '1.0.0';
 
 program
-    .name('Alfred Butler')
+    .name('Alfred Botler')
     .description('CLI tool for the Construct 3 Framework')
-    .version('1.0.0');
+    .version(version)
+    .action(() => {
+        home(program.commands, version);
+    });
 
 program.command('build')
     .description('Builds the project of the current directory')

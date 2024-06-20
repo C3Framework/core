@@ -42,7 +42,7 @@ export function line(str, style = null) {
 }
 
 export function header() {
-    return center('Alfred Butler', chalk.black.bgYellowBright.bold);
+    return center('Alfred Botler', chalk.black.bgYellowBright.bold);
 }
 
 export function log(...value) {
@@ -54,10 +54,16 @@ export function log(...value) {
     ];
 
     if (value.length) {
-        msg = [...msg, ...value, ""];
+        msg = [...msg, ...value];
     }
 
-    console.log(msg.join("\n"));
+    multiline(...msg);
+}
+
+export function multiline(...values) {
+    if (!enabled) return;
+
+    console.log([...values, ""].join("\n"));
 }
 
 export function error(value) {
