@@ -1,13 +1,143 @@
 # Construct 3 Framework
 
-The Construct 3 framework is a set of JavaScript/TypeScript utilities and a CLI tool to automate the process of developing addons for the [Construct 3](https://construct.net) game engine, using typings with a custom parser to build all the assets and configuration files required by the engine.
+This repo contains the **Alfred Botler** CLI and TypeScript utilities needed for the [Construct 3 Framework](https://github.com/MasterPose/c3-framework).
 
-Features:
-- **Highly-typed**: Code addons using TypeScript.
-- **ACEs Decorators**: All the ACE config is done in one single place, inside the same code.
-- **Customizable Settings**: The framework can be customized as needed.
-- **File scanning**: TypeScript definitions and File dependencies will be automatically added.
-- **Multi-language support**: With a dot-notation/Laravel-inspired translation system for all strings.
+Since the framework is customizable you can install this package by yourself and setup things manually but using the previously [mentioned template](https://github.com/MasterPose/c3-framework) is highly encourage.
+
+## Installation
+
+You can install this package through NPM using this repo URL:
+
+```
+npm install https://github.com/MasterPose/c3-framework
+```
+
+## Structure
+
+A normal structure for a project would look something like this:
+
+```
+/dist
+/examples
+├── example.c3p
+└── example.png
+/export
+/src
+├── /lang
+│   ├── de-DE.json
+│   └── es-MX.json
+├── /libs
+│   ├── mylib.ts
+│   └── style.css
+├── addon.ts
+├── editor.ts
+├── icon.svg
+├── instance.ts
+└── runtime.ts
+c3.config.js
+tsconfig.json
+```
+
+All the paths are customizable creating a `c3.config.js` on the root of the project.
+
+You can check the [template](https://github.com/MasterPose/c3-framework) for more information.
+
+## Usage
+
+### Commands
+
+You can run the following to see all the available commands:
+
+```
+npx alfred
+```
+
+You can build your project using:
+
+```
+npm run build
+```
+
+You can run a development server using:
+
+```
+npx alfred build --dev
+```
+
+You can generate documentation using:
+
+```
+npx alfred doc
+```
+
+### Defining ACEs
+
+The C3 Framework offers a coupled workflow for defining ACEs. You define the configuration of your ACEs by marking your code using **TypeScript decorators**.
+
+To start you must tell to Alfred on what classes your ACEs will be defined, by using the `@AceClass` decorator. After that, you can start coding your logic in a natural way, marking functions and parameters with their respective decorators, and using the [C3 types](https://www.construct.net/en/make-games/manuals/addon-sdk/reference/pluginproperty#internalH1Link0) (such as `combo`, `cmp`, `eventvar`, etc.) automatically loaded from the framework:
+
+```ts
+import { AceClass, Behavior, Condition, Param } from "c3-framework";
+import Config from "./addon";
+
+const opts = [
+  'test',
+  'something',
+  'another',
+];
+
+@AceClass()
+class Instance extends Behavior.Instance(Config) {
+  constructor() {
+    super();
+  }
+
+  @Condition('Is Enabled')
+  isEnabled() {
+    return true;
+  }
+
+  @Condition('Is "{0}" Something')
+  isSomething(
+    @Param({
+      items: [
+        { test: 'Test' },
+        { something: 'Something' },
+        { another: 'Another' },
+      ],
+    })
+    tag: combo // Notice that the Construct types are available to use on TypeScript
+    // tag: Cnd.combo // You can also access them through the `Cnd` or `Act` namespaces
+  ) {
+    return opts[tag] == 'something';
+  }
+}
+
+export default Instance;
+```
+
+## Default build config
+
+This is the default `c3.config.js` configuration loaded:
+
+```js
+/** @type {import("c3-framework").BuildConfig} */
+export default {
+    minify: true,
+    host: 'http://localhost',
+    port: 3000,
+    sourcePath: 'src/',
+    runtimeScript: 'runtime.ts',
+    addonScript: 'addon.ts',
+    exportPath: 'export/',
+    distPath: 'dist/',
+    libPath: 'src/libs',
+    langPath: 'src/lang',
+    defPath: 'src/',
+    examplesPath: 'examples/',
+    defaultLang: 'en-US',
+}
+```
 
 ## Credits
 
