@@ -17,12 +17,7 @@ export function trimPathSlashes(str = '') {
 
 export function filepath(...paths) {
     paths = join(...paths.map(v => trimPathSlashes(v)));
-    let path = join(cwd(), paths);
-
-    // if (os.platform() === 'win32') {
-    //     path = pathToFileURL(path)
-    // }
-
+    const path = join(cwd(), paths).replace(/\\/g, '/');
     return path;
 }
 
