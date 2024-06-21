@@ -41,6 +41,7 @@ import { addonJson, buildFile, resetParsedConfig } from '../../js/parser.js';
 import { __, loadLanguage, resetLoadedLangs } from '../../js/lang.js';
 import * as cli from '../../js/cli.js';
 import chalk from 'chalk';
+import { join } from 'path';
 
 function emptyExport() {
     const exportPath = filepath(bc().exportPath);
@@ -676,7 +677,16 @@ function parseAces(config) {
                     return;
                 }
 
-                return parseScript(ts);
+                let parsed;
+
+                try {
+                    parsed = parseScript(ts)
+                } catch (error) {
+                    const relativePath = join(config.sourcePath, args.path.replace(filepath(config.sourcePath), ''));
+                    throw Error('Script ' + chalk.bold(relativePath) + ' ' + error)
+                }
+
+                return parsed;
             });
 
         }
