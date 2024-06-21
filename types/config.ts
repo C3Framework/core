@@ -15,6 +15,7 @@ export interface AddonConfig extends C3Ide2.ProjectAddon {
         | "external-css"
     },
     info?: {
+        [x: string]: any;
         Set?: {
             CanBeBundled?: boolean;
             IsDeprecated?: boolean;
@@ -73,7 +74,8 @@ export interface BuiltAddonConfig extends AddonConfig {
         actions: any,
         expressions: any,
         conditions: any
-    }
+    },
+    [x: string]: any;
 };
 
 export interface BuildConfig {

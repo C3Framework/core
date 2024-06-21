@@ -1,9 +1,10 @@
 import mime from 'mime';
-import { BuiltAddonConfig } from './types/config';
+import { BuiltAddonConfig, PluginConfig } from './types/config';
+import { Behavior, Plugin } from './types/classes';
 
 export * from './types/decorators';
 export * from './types/config';
-
+export * from './types/classes';
 export namespace Utils {
     const camelCasedMap = new Map();
     export function camel(str: string) {
@@ -25,87 +26,6 @@ export namespace Utils {
         camelCasedMap.set(str, result);
 
         return result;
-    }
-}
-
-export namespace Behavior {
-    export function Base(config: BuiltAddonConfig) {
-        return class extends globalThis.ISDKBehaviorBase {
-            constructor() {
-                super();
-            }
-
-            _release() {
-                super._release();
-            }
-        }
-    }
-
-    export function Type(config: BuiltAddonConfig) {
-        return class extends globalThis.ISDKBehaviorTypeBase {
-            constructor() {
-                super();
-            }
-
-            _release() {
-                super._release();
-            }
-        }
-    };
-
-    export function Instance(config: BuiltAddonConfig) {
-        return class extends globalThis.ISDKBehaviorInstanceBase {
-            constructor() {
-                super();
-            }
-
-            _release() {
-                super._release();
-            }
-        }
-    };
-
-    export namespace Editor {
-        export function Base(config: BuiltAddonConfig) {
-            const SDK = self.SDK;
-
-            return class extends SDK.IBehaviorBase {
-                constructor() {
-                    super(config.id);
-                    registerEditorClass(this, SDK, config);
-                }
-            };
-        }
-
-        export function Type(config: BuiltAddonConfig) {
-            const SDK = self.SDK;
-
-            return class extends SDK.IBehaviorTypeBase {
-                constructor(sdkPlugin: any, iObjectType: any) {
-                    super(sdkPlugin, iObjectType);
-                }
-            };
-        }
-
-        export function Instance(config: BuiltAddonConfig) {
-            const SDK = self.SDK;
-
-            return class extends SDK.IBehaviorInstanceBase {
-                constructor(sdkType: any, inst: any) {
-                    super(sdkType, inst);
-                }
-
-                Release() { }
-
-                OnCreate() { }
-
-                OnPropertyChanged(id: any, value: any) { }
-
-                LoadC2Property(name: any, valueString: any) {
-                    return false; // not handled
-                }
-            };
-        }
     }
 }
 
@@ -164,15 +84,18 @@ export function registerEditorClass(inst: any, SDK: any, config: BuiltAddonConfi
         info.SetTypeScriptDefinitionFiles(config.typeDefs);
     }
 
-    if (config.info && config.info.Set) {
-        Object.keys(config.info.Set).forEach((key) => {
-            // @ts-ignore
-            const value = config.info.Set[key];
-            const fn = info[`Set${key}`];
-            if (fn && value !== null && value !== undefined)
-                fn.call(info, value);
-        });
+    if (config.info) {
+        if (config.info.Set) {
+            Object.keys(config.info.Set).forEach((key) => {
+                // @ts-ignore
+                const value = config.info.Set[key];
+                const fn = info[`Set${key}`];
+                if (fn && value !== null && value !== undefined)
+                    fn.call(info, value);
+            });
+        }
     }
+
 
     SDK.Lang.PushContext(".properties");
 
@@ -233,8 +156,8 @@ export function initRuntime(config: BuiltAddonConfig, opts?: InitAddonOpts) {
     switch (config.addonType) {
         case 'behavior':
             return initBehavior(C3, config, opts);
-        // case 'plugin':
-        //     return initPlugin(C3, config, opts);
+        case 'plugin':
+            return initPlugin(C3, config, opts);
         default:
             throw new Error("Unexpected addon type trying to be initialized");
     }
@@ -246,36 +169,36 @@ export function initEditor(config: BuiltAddonConfig, opts?: InitAddonOpts) {
     switch (config.addonType) {
         case 'behavior':
             return initBehaviorEditor(SDK, config, opts);
-        // case 'plugin':
-        //     return initPluginEditor(SDK, config, opts);
+        case 'plugin':
+            return initPluginEditor(SDK, config, opts);
         default:
             throw new Error("Unexpected addon type trying to be initialized");
     }
 }
 
-// export function initPlugin(C3: any, config: BuiltAddonConfig, opts?: InitAddonOpts) {
-//     const A_C = C3.Plugins[config.id] = opts?.Base ?? Plugin.Base(config);
+export function initPlugin(C3: any, config: BuiltAddonConfig, opts?: InitAddonOpts) {
+    const A_C = C3.Plugins[config.id] = opts?.Base ?? Plugin.Base(config);
 
-//     A_C.Type = opts?.Type ?? Plugin.Type(config);
+    A_C.Type = opts?.Type ?? Plugin.Type(config);
 
-//     A_C.Instance = opts?.Instance ?? Plugin.Instance(config);
+    A_C.Instance = opts?.Instance ?? Plugin.Instance(config);
 
-//     injectAces(A_C, config)
+    injectAces(A_C, config)
 
-//     return A_C;
-// }
+    return A_C;
+}
 
-// export function initPluginEditor(SDK: any, config: BuiltAddonConfig, opts?: InitAddonOpts) {
-//     const A_C = SDK.Plugins[config.id] = opts?.Base ?? Plugin.Editor.Base(config);
+export function initPluginEditor(SDK: any, config: BuiltAddonConfig, opts?: InitAddonOpts) {
+    const A_C = SDK.Plugins[config.id] = opts?.Base ?? Plugin.Editor.Base(config);
 
-//     A_C.Register(config.id, A_C);
+    A_C.Register(config.id, A_C);
 
-//     A_C.Type = opts?.Type ?? Plugin.Editor.Type(config);
+    A_C.Type = opts?.Type ?? Plugin.Editor.Type(config);
 
-//     A_C.Instance = opts?.Instance ?? Plugin.Editor.Instance(config);
+    A_C.Instance = opts?.Instance ?? Plugin.Editor.Instance(config);
 
-//     return A_C;
-// }
+    return A_C;
+}
 
 export function initBehavior(C3: any, config: BuiltAddonConfig, opts?: InitAddonOpts) {
     const A_C = C3.Behaviors[config.id] = opts?.Base ?? Behavior.Base(config);
@@ -364,13 +287,17 @@ declare global {
 
     var SDK: any;
     var C3: any;
-    var ISDKPluginBase: any;
     var ISDKObjectTypeBase: any;
     var ISDKInstanceBase: any;
     var ISDKWorldInstanceBase: any;
     var ISDKDOMPluginBase: any;
     var ISDKDOMInstanceBase: any;
+    var ISDKPluginBase: any;
+    var ISDKTypeBase: any;
     var ISDKBehaviorBase: any;
     var ISDKBehaviorTypeBase: any;
     var ISDKBehaviorInstanceBase: any;
+    var IInstance: any;
+    var IWorldInstance: any;
+    var IDOMInstance: any;
 }
