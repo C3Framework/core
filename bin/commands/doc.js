@@ -39,7 +39,7 @@ function getProperties(addon) {
 }
 
 function getAces(aces, lang) {
-    const get = (type) => {
+    const get = (type, withReturnType = false) => {
         const line = [];
         Object.keys(aces).forEach(categoryKey => {
             const category = aces[categoryKey];
@@ -56,7 +56,7 @@ function getAces(aces, lang) {
                 }
 
                 line.push(
-                    `| ${aceLang['list-name']} | ${aceLang['description']} | ${paramString} |`
+                    `| ${aceLang['list-name'] ?? aceLang['translated-name']} | ${aceLang['description']} |` + (withReturnType ? ` ${ace.returnType} |` : '') + ` ${paramString} |`
                 );
             });
         });
@@ -65,7 +65,7 @@ function getAces(aces, lang) {
 
     const actions = get('actions');
     const conditions = get('conditions');
-    const expressions = get('expressions');
+    const expressions = get('expressions', true);
 
     return [actions, conditions, expressions];
 }
