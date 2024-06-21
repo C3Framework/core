@@ -566,7 +566,7 @@ function searchTopClasses(tree) {
 function parseScript(ts) {
     let offset = 0;
     const tree = acorn.Parser.extend(tsPlugin()).parse(ts, {
-        ecmaVersion: '2021',
+        ecmaVersion: '2022',
         sourceType: 'module',
         // TODO: Allow description via docblock
         // onComment: (isBlock, text, s, e, loc, endLoc) => {
