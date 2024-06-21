@@ -7,7 +7,7 @@ import { readFileSync } from 'fs';
 
 export async function parseAddonScript(path, acesRuntime = null) {
     const content = readFileSync(path, { encoding: 'utf-8' });
-    const inject = JSON.stringify(acesRuntime ?? aceDict(), null, 4).replace(/"(\(inst\) => inst\.[a-zA-Z0-9$_]+)"/, '$1');
+    const inject = JSON.stringify(acesRuntime ?? aceDict(), null, 4);
     const injected = content.replace(/(export\s+default\s+)([^;]+);/, `$1{\n...($2), \n...({Aces: ${inject}})\n};`);
 
     const jsConfig = esbuild.transformSync(injected, {
@@ -24,6 +24,10 @@ export async function parseAddonScript(path, acesRuntime = null) {
     }
 
     return addon;
+}
+
+export function addonToJson(addon, config = {}) {
+    return JSON.stringify(addon, null, !config?.minify ? 4 : undefined).replace(/"(\(inst\) => inst\.[a-zA-Z0-9$_]+)"/g, '$1');
 }
 
 async function addonScriptToObject(tsAddonConfig = '') {
