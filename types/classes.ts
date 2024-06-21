@@ -1,9 +1,41 @@
 import { PLURAL_ADDON, registerEditorClass } from "..";
-import { BuiltAddonConfig } from "./config";
+import { AddonConfig, BuiltAddonConfig } from "./config";
 
-type KeyValue = { [key: string]: string };
+module ClassUtils {
+    /**  @internal */
+    export function _trigger(inst: any, config: AddonConfig, type: Function | string) {
+        if (type instanceof Function) {
+            type = type.name;
+        }
 
-interface C3FrameworkInstance {
+        inst.dispatchEvent(new globalThis.C3.Event(type));
+        inst._trigger(globalThis.C3.Behaviors[config.id].Cnds[type]);
+    }
+
+    /** @internal */
+    export function _getDebuggerProperties(inst: any, config: AddonConfig) {
+        const prefix = PLURAL_ADDON[config.addonType] + "." + config.id.toLocaleLowerCase();
+        const props = inst.debugProperties();
+        return [{
+            title: "$" + config.name,
+            properties: Object.keys(props)
+                .map((prop) => {
+                    if (!inst.hasOwnProperty(prop)) {
+                        throw new Error(`Passed unset property '${prop}' to debugProperties(). Does the property '${prop}' really exists?`);
+                    }
+                    return {
+                        name: prefix + '.' + props[prop].replace(/^\./, ''),
+                        value: inst[prop],
+                        onedit: (v: any) => inst[prop] = v
+                    };
+                })
+        }];
+    }
+}
+
+
+
+export interface IC3FrameworkInstance {
     /** 
      * Triggers and dispatches event for scripting API.
      * 
@@ -24,62 +56,11 @@ interface C3FrameworkInstance {
     _debugProperties(): KeyValue;
 }
 
-function ApplyInstance
-    <T extends new (...args: any[]) => C3FrameworkInstance>
-    (config: BuiltAddonConfig, Base: T): new (...args: any[]) => C3FrameworkInstance & { [x: string]: any; } {
-
-    return class extends Base {
-        [x: string]: any;
-
-        constructor(...args: any[]) {
-            super(...args);
-        }
-
-        trigger(type: Function | string) {
-            if (type instanceof Function) {
-                type = type.name;
-            }
-
-            this.dispatchEvent(new globalThis.C3.Event(type));
-            this._trigger(globalThis.C3.Behaviors[config.id].Cnds[type]);
-        }
-
-        _debugProperties(): KeyValue {
-            return {};
-        }
-
-        _getDebuggerProperties() {
-            const prefix = PLURAL_ADDON[config.addonType] + "." + config.id.toLocaleLowerCase();
-            const props = this.debugProperties();
-            return [{
-                title: "$" + config.name,
-                properties: Object.keys(props)
-                    .map((prop) => {
-                        if (!this.hasOwnProperty(prop)) {
-                            throw new Error(`Passed unset property '${prop}' to debugProperties(). Does the property '${prop}' really exists?`);
-                        }
-                        return {
-                            name: prefix + '.' + props[prop].replace(/^\./, ''),
-                            value: this[prop],
-                            onedit: (v: any) => this[prop] = v
-                        };
-                    })
-            }];
-        }
-
-    };
-}
-
-
 export namespace Behavior {
     export function Base(config: BuiltAddonConfig) {
         return class extends globalThis.ISDKBehaviorBase {
             constructor() {
                 super();
-            }
-
-            _release() {
-                super._release();
             }
         }
     }
@@ -89,15 +70,23 @@ export namespace Behavior {
             constructor() {
                 super();
             }
-
-            _release() {
-                super._release();
-            }
         }
     };
 
-    export function Instance(config: BuiltAddonConfig) {
-        return ApplyInstance(config, globalThis.ISDKBehaviorInstanceBase);
+    export function Instance<T>(config: BuiltAddonConfig) {
+        return class instance extends globalThis.ISDKBehaviorInstanceBase<T> implements IC3FrameworkInstance {
+            trigger(type: string | Function): void {
+                ClassUtils._trigger(this, config, type);
+            }
+
+            _debugProperties(): KeyValue {
+                return {};
+            }
+
+            _getDebuggerProperties(): any[] {
+                return ClassUtils._getDebuggerProperties(this, config);
+            }
+        };
     };
 
     export namespace Editor {
@@ -173,19 +162,27 @@ export namespace Plugin {
     }
 
     export function Type(config: BuiltAddonConfig) {
-        return class extends globalThis.ISDKObjectTypeBase {
+        return class extends globalThis.ISDKObjectTypeBase<IWorldInstance | IInstance> {
             constructor() {
                 super();
-            }
-
-            _release() {
-                super._release();
             }
         }
     };
 
     export function Instance(config: BuiltAddonConfig) {
-        return ApplyInstance(config, CLASSES[config.type].instance);
+        return class extends globalThis.ISDKInstanceBase implements IC3FrameworkInstance {
+            trigger(type: string | Function): void {
+                ClassUtils._trigger(this, config, type);
+            }
+
+            _debugProperties(): KeyValue {
+                return {};
+            }
+
+            _getDebuggerProperties(): any[] {
+                return ClassUtils._getDebuggerProperties(this, config);
+            }
+        };
     };
 
     export namespace Editor {

@@ -234,6 +234,9 @@ declare global {
         [any: string]: any;
     }
 
+    // Helper
+    type KeyValue = { [key: string]: string };
+
     type combo = number;
     type cmp = number;
     type objectname = string;
@@ -287,18 +290,4 @@ declare global {
     }
 
     var SDK: any;
-    var C3: any;
-    var ISDKObjectTypeBase: any;
-    var ISDKInstanceBase: any;
-    var ISDKWorldInstanceBase: any;
-    var ISDKDOMPluginBase: any;
-    var ISDKDOMInstanceBase: any;
-    var ISDKPluginBase: any;
-    var ISDKTypeBase: any;
-    var ISDKBehaviorBase: any;
-    var ISDKBehaviorTypeBase: any;
-    var ISDKBehaviorInstanceBase: any;
-    var IInstance: any;
-    var IWorldInstance: any;
-    var IDOMInstance: any;
 }
