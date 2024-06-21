@@ -111,7 +111,7 @@ export namespace Plugin {
     }
 
     export function Type(config: BuiltAddonConfig) {
-        return class extends globalThis.ISDKTypeBase {
+        return class extends globalThis.ISDKObjectTypeBase {
             constructor() {
                 super();
             }
@@ -141,16 +141,21 @@ export namespace Plugin {
             return class extends SDK.IPluginBase {
                 constructor() {
                     super(config.id);
-                    registerEditorClass(this, SDK, config);
+
+                    const info = this._info;
+
+                    info.SetPluginType(
+                        config.type === "object" ? "object" : "world"
+                    );
 
                     if (config.info && config.info.defaultImageUrl) {
-                        this._info.SetDefaultImageURL(
+                        info.SetDefaultImageURL(
                             `c3runtime/${config.info.defaultImageUrl}`
                         );
                     }
 
                     if (config.domSideScripts) {
-                        this._info.SetDOMSideScripts(
+                        info.SetDOMSideScripts(
                             config.domSideScripts.map((s) => `c3runtime/${s}`)
                         );
                     }
@@ -159,7 +164,7 @@ export namespace Plugin {
                     if (config.extensionScript && config.extensionScript.enabled) {
                         const targets = config.extensionScript.targets || [];
                         targets.forEach((target: string) => {
-                            this._info.AddFileDependency({
+                            info.AddFileDependency({
                                 filename: `${config.id}_${target.toLowerCase()}.ext.dll`,
                                 type: "wrapper-extension",
                                 platform: `windows-${target.toLowerCase()}`,
@@ -170,10 +175,14 @@ export namespace Plugin {
                     if (config.info && config.info.AddCommonACEs) {
                         Object.keys(config.info.AddCommonACEs).forEach((key) => {
                             if (config.info!.AddCommonACEs[key]) {
-                                this._info[`AddCommon${key}ACEs`]();
+                                info[`AddCommon${key}ACEs`]();
                             }
                         });
                     }
+
+                    // Set common stuff
+                    registerEditorClass(this, SDK, config);
+
                 }
             };
         }

@@ -145,8 +145,8 @@ function formatParam(param = {}) {
 }
 
 /**
- * @param {BuildConfig} config 
- * @param {import('../index.js').BuiltAddonConfig} addon 
+ * @param {import('../../types/config.js').BuildConfig} config 
+ * @param {import('../../types/config.js').BuiltAddonConfig} addon 
  */
 async function addonFromConfig(config, addon) {
     return {
@@ -166,7 +166,7 @@ async function addonFromConfig(config, addon) {
             "c3runtime/conditions.js",
             "c3runtime/expressions.js",
             "c3runtime/instance.js",
-            "c3runtime/behavior.js",
+            `c3runtime/${addon.addonType}.js`,
             "c3runtime/type.js",
             "lang/en-US.json",
             "aces.json",
@@ -687,12 +687,12 @@ async function build() {
 
     const main = await buildFile(filepath(config.sourcePath, config.runtimeScript), config, [parseAces(config)]);
 
-    writeFileSync(filepath(config.exportPath, "c3runtime/behavior.js"), main);
-    writeFileSync(filepath(config.exportPath, "aces.json"), JSON.stringify(acesFromConfig(aces), null, 2));
-
     if (!addonJson) {
         throw Error(`Addon wasn't parsed properly. This may be due of not being able to find '${config.addonScript}'`);
     }
+
+    writeFileSync(filepath(config.exportPath, `c3runtime/${addonJson.addonType}.js`), main);
+    writeFileSync(filepath(config.exportPath, "aces.json"), JSON.stringify(acesFromConfig(aces), null, 2));
 
     const langs = langFromConfig(config, addonJson, aces);
 
