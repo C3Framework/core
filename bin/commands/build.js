@@ -618,6 +618,10 @@ function parseScript(ts) {
                 returnType = getParserType(method.returnType);
             }
 
+            if (!returnType && aceType === 'expressions') {
+                returnType = 'any';
+            }
+
             const category = config.category ?? 'general';
 
             const params = method.params?.map((v) => {
