@@ -89,7 +89,7 @@ export function Condition(displayText?: string, opts?: ICondition): MethodDecora
 /**
  * Shortcut for Condition decorator with `isTrigger` as `true`
  */
-export function Trigger(displayText?: string, opts?: ICondition): MethodDecorator {
+export function Trigger(opts?: ICondition): MethodDecorator {
     return function (target) {
     };
 }

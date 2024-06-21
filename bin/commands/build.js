@@ -113,6 +113,29 @@ function getDecoratorParams(decoratorParams = {}) {
         }, {}) ?? {};
 }
 
+function getAceDecoratorConfig(decorator, decoratorParams = []) {
+    switch (decorator) {
+        case 'Action':
+        case 'Condition':
+            return getDecoratorParams(decoratorParams[1]);
+        case 'Expression':
+            return getDecoratorParams(decoratorParams[0]);
+        case 'Trigger':
+            const config = getDecoratorParams(decoratorParams[0]);
+            config.displayText = config.displayText ?? "{my} {title}";
+
+            if (config.isFakeTrigger) {
+                config.isTrigger = false;
+            } else {
+                config.isTrigger = true;
+            }
+            // config.isFakeTrigger = !config.isTrigger;
+            return config;
+        default:
+            throw Error("Trying to get configuration from an Unexpected Ace decorator");
+    }
+}
+
 function formatParam(param = {}) {
     let id, initialValue, type;
 
@@ -583,7 +606,8 @@ function parseScript(ts) {
 
             const decorator = v.decorators[0];
 
-            const aceType = ACE_DECORATORS[decorator.expression.callee.name];
+            const decoratorName = decorator.expression.callee.name;
+            const aceType = ACE_DECORATORS[decoratorName];
             // ACE_TYPES[decorator.expression.callee.name];
 
             if (!aceType) {
@@ -600,15 +624,7 @@ function parseScript(ts) {
                 }
             }
 
-            let decoratorConfig;
-
-            if (aceType === 'expressions') {
-                decoratorConfig = decoratorParams[0];
-            } else {
-                decoratorConfig = decoratorParams[1];
-            }
-
-            const config = getDecoratorParams(decoratorConfig);
+            const config = getAceDecoratorConfig(decoratorName, decoratorParams);
 
             let returnType = config?.returnType;
 
@@ -631,7 +647,7 @@ function parseScript(ts) {
                 return formatParam(v);
             }) ?? [];
 
-            let displayText = decoratorParams[0]?.value;
+            let displayText = config.displayText;
 
             if (!displayText) {
                 // Auto-assign params to display text
@@ -653,7 +669,7 @@ function parseScript(ts) {
             aces[category][aceType].push({
                 ...config,
                 id,
-                displayText,
+                displayText: displayText.replace("{title}", title),
                 listName: config.listName ?? title,
                 category,
                 params,
