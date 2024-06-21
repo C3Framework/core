@@ -1,15 +1,75 @@
-import { registerEditorClass } from "..";
+import { PLURAL_ADDON, registerEditorClass } from "..";
 import { BuiltAddonConfig } from "./config";
 
-// Maybe this could be implemented wth a Mixin
-function triggerEvent(inst: any, id: string, type: Function | string) {
-    if (type instanceof Function) {
-        type = type.name;
-    }
+type KeyValue = { [key: string]: string };
 
-    inst.dispatchEvent(new globalThis.C3.Event("onHitSolid"));
-    inst._trigger(globalThis.C3.Behaviors[id].Cnds[type]);
+interface C3FrameworkInstance {
+    /** 
+     * Triggers and dispatches event for scripting API.
+     * 
+     * Shortcut to execute `_trigger()` and  `dispatchEvent()`
+     */
+    trigger(type: Function | string): void;
+
+    /**
+     * Define properties to be read by `_getDebuggerProperties()`.
+     * 
+     * The key should be the name of the property and the value the display text on the debugger
+     * @example 
+     * { 
+     *   _speed: "properties.speed.name", 
+     *   _isEnabled: "properties.enabled.name" 
+     * }
+     */
+    _debugProperties(): KeyValue;
 }
+
+function ApplyInstance
+    <T extends new (...args: any[]) => C3FrameworkInstance>
+    (config: BuiltAddonConfig, Base: T): new (...args: any[]) => C3FrameworkInstance & { [x: string]: any; } {
+
+    return class extends Base {
+        [x: string]: any;
+
+        constructor(...args: any[]) {
+            super(...args);
+        }
+
+        trigger(type: Function | string) {
+            if (type instanceof Function) {
+                type = type.name;
+            }
+
+            this.dispatchEvent(new globalThis.C3.Event(type));
+            this._trigger(globalThis.C3.Behaviors[config.id].Cnds[type]);
+        }
+
+        _debugProperties(): KeyValue {
+            return {};
+        }
+
+        _getDebuggerProperties() {
+            const prefix = PLURAL_ADDON[config.addonType] + "." + config.id.toLocaleLowerCase();
+            const props = this.debugProperties();
+            return [{
+                title: "$" + config.name,
+                properties: Object.keys(props)
+                    .map((prop) => {
+                        if (!this.hasOwnProperty(prop)) {
+                            throw new Error(`Passed unset property '${prop}' to debugProperties(). Does the property '${prop}' really exists?`);
+                        }
+                        return {
+                            name: prefix + '.' + props[prop].replace(/^\./, ''),
+                            value: this[prop],
+                            onedit: (v: any) => this[prop] = v
+                        };
+                    })
+            }];
+        }
+
+    };
+}
+
 
 export namespace Behavior {
     export function Base(config: BuiltAddonConfig) {
@@ -37,19 +97,7 @@ export namespace Behavior {
     };
 
     export function Instance(config: BuiltAddonConfig) {
-        return class extends globalThis.ISDKBehaviorInstanceBase {
-            constructor() {
-                super();
-            }
-
-            trigger(type: Function | string) {
-                triggerEvent(this, config.id, type);
-            }
-
-            _release() {
-                super._release();
-            }
-        }
+        return ApplyInstance(config, globalThis.ISDKBehaviorInstanceBase);
     };
 
     export namespace Editor {
@@ -137,19 +185,7 @@ export namespace Plugin {
     };
 
     export function Instance(config: BuiltAddonConfig) {
-        return class extends CLASSES[config.type].instance {
-            constructor() {
-                super();
-            }
-
-            trigger(type: Function | string) {
-                triggerEvent(this, config.id, type)
-            }
-
-            _release() {
-                super._release();
-            }
-        }
+        return ApplyInstance(config, CLASSES[config.type].instance);
     };
 
     export namespace Editor {
