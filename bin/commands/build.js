@@ -432,7 +432,7 @@ function acesFromConfig(config) {
             expressions: config[category].expressions
                 .map((ace) => {
                     const ret = {
-                        id: key,
+                        id: ace.id,
                         scriptName: ace.id,
                         expressionName: ace.id,
                     };
