@@ -313,7 +313,7 @@ function langFromConfig(config, addon, aces) {
         Object.keys(ungroupedAces.expressions).forEach((key) => {
             const expression = ungroupedAces.expressions[key];
             root.expressions[expression.id] = {
-                "translated-name": __(key),
+                "translated-name": __(expression.listName),
                 description: __(expression.description),
                 params: {},
             };
@@ -600,7 +600,15 @@ function parseScript(ts) {
                 }
             }
 
-            const config = getDecoratorParams(decoratorParams[1]);
+            let decoratorConfig;
+
+            if (aceType === 'expressions') {
+                decoratorConfig = decoratorParams[0];
+            } else {
+                decoratorConfig = decoratorParams[1];
+            }
+
+            const config = getDecoratorParams(decoratorConfig);
 
             let returnType = config?.returnType;
 
