@@ -1,6 +1,16 @@
 import { registerEditorClass } from "..";
 import { BuiltAddonConfig } from "./config";
 
+// Maybe this could be implemented wth a Mixin
+function triggerEvent(inst: any, id: string, type: Function | string) {
+    if (type instanceof Function) {
+        type = type.name;
+    }
+
+    inst.dispatchEvent(new globalThis.C3.Event("onHitSolid"));
+    inst._trigger(globalThis.C3.Behaviors[id].Cnds[type]);
+}
+
 export namespace Behavior {
     export function Base(config: BuiltAddonConfig) {
         return class extends globalThis.ISDKBehaviorBase {
@@ -30,6 +40,10 @@ export namespace Behavior {
         return class extends globalThis.ISDKBehaviorInstanceBase {
             constructor() {
                 super();
+            }
+
+            trigger(type: Function | string) {
+                triggerEvent(this, config.id, type);
             }
 
             _release() {
@@ -126,6 +140,10 @@ export namespace Plugin {
         return class extends CLASSES[config.type].instance {
             constructor() {
                 super();
+            }
+
+            trigger(type: Function | string) {
+                triggerEvent(this, config.id, type)
             }
 
             _release() {
