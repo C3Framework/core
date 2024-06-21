@@ -234,7 +234,7 @@ declare global {
     }
 
     type combo = number;
-    type cmp = string;
+    type cmp = number;
     type objectname = string;
     type layer = string;
     type layout = string;
