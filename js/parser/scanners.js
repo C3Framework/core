@@ -61,6 +61,11 @@ export async function getFileListFromConfig(config, addon) {
 
     const files = await readdirSync(libPath).reduce(async (objP, filename) => {
         const obj = await objP;
+
+        if (filename.startsWith('.')) {
+            return obj;
+        }
+
         const ext = fileExtension(filename);
         let importType;
 
