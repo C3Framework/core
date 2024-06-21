@@ -1,5 +1,5 @@
 import { fileExtension, filepath, trimPathSlashes, writeFileRecursively } from '../utils.js';
-import { readFileSync, readdirSync } from 'fs';
+import { existsSync, readFileSync, readdirSync } from 'fs';
 import { isAbsolute } from 'path';
 import { buildFile } from '../parser.js';
 import { DEFAULT_IMPORT_TYPE } from '../constants.js';
@@ -32,14 +32,18 @@ async function processDependencyFile(config, filename, ext, type) {
  * @param {BuildConfig} config 
  */
 export function getTypeDefinitions(config) {
-    const definitions = readdirSync(filepath(config.defPath))
+    const dirPath = filepath(config.defPath);
+
+    if (!existsSync(dirPath)) return [];
+
+    const definitions = readdirSync(dirPath)
         .filter((v => v.endsWith('.d.ts')))
         .map((filename) => {
             const defPath = config.defPath;
             const exportPath = config.exportPath;
 
             const input = filepath(defPath, '/', filename);
-            const output = input.replace(filepath(defPath), filepath(exportPath, 'c3runtime/'))
+            const output = input.replace(dirPath, filepath(exportPath, 'c3runtime/'))
 
             writeFileRecursively(output, readFileSync(input));
 
@@ -58,6 +62,7 @@ export async function getFileListFromConfig(config, addon) {
     const libPath = filepath(config.libPath);
     const copyConfig = addon?.fileDependencies ?? {};
 
+    if (!existsSync(libPath)) return {};
 
     const files = await readdirSync(libPath).reduce(async (objP, filename) => {
         const obj = await objP;

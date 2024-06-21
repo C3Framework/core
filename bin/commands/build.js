@@ -180,9 +180,14 @@ async function addonFromConfig(config, addon) {
 
 function langFromConfig(config, addon, aces) {
     const jsonRegex = new RegExp("\\.json$");
-    const fileLangs = readdirSync(filepath(config.langPath))
-        .filter((v) => v.match(jsonRegex))
-        .map((v) => v.replace(jsonRegex, ''));
+    const langPath = filepath(config.langPath);
+    let fileLangs = [];
+
+    if (existsSync(langPath)) {
+        fileLangs = readdirSync(langPath)
+            .filter((v) => v.match(jsonRegex))
+            .map((v) => v.replace(jsonRegex, ''));
+    }
 
     const langs = [...new Set([
         config.defaultLang,
