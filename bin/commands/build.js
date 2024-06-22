@@ -41,7 +41,7 @@ import { addonJson, buildFile, resetParsedConfig } from '../../js/parser.js';
 import { __, loadLanguage, resetLoadedLangs } from '../../js/lang.js';
 import * as cli from '../../js/cli.js';
 import chalk from 'chalk';
-import { join } from 'path';
+import { join, normalize } from 'path';
 
 function emptyExport() {
     const exportPath = filepath(bc().exportPath);
@@ -697,10 +697,15 @@ function parseAces(config) {
     return {
         name: 'c3framework-aces',
         setup(build) {
-            build.onLoad({ filter: parseFile }, (args) => {
+            build.onLoad({ filter: /.*\.ts$/ }, (args) => {
+                const normalized = normalize(args.path).replace(/\\/g, '/'); // I hate you Bill Gates...
+
+                if (!normalized.match(parseFile)) {
+                    return;
+                }
+
                 let ts = readFileSync(args.path).toString('utf-8');
 
-                // match decorators
                 if (!hasDecorators(ts)) {
                     return;
                 }
