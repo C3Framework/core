@@ -1,4 +1,5 @@
-- [] Add plugin config
+- [X] Add plugin config
 - [] Add wapper extensions
 - [] Add dom scripts
-- [] Add doc generator
+- [X] Add doc generator
+- [] Add default properties to addon properties (initialValue etc)
