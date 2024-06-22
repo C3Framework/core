@@ -169,8 +169,9 @@ export namespace Plugin {
         }
     };
 
-    export function Instance(config: BuiltAddonConfig) {
-        return class extends globalThis.ISDKInstanceBase implements IC3FrameworkInstance {
+    export function Instance<T extends new (...args: any[]) => ISDKInstanceBase_ | ISDKWorldInstanceBase_>(config: BuiltAddonConfig, type: T) {
+        // @ts-ignore
+        return class extends type implements IC3FrameworkInstance {
             trigger(type: string | Function): void {
                 ClassUtils._trigger(this, config, type);
             }
