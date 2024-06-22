@@ -704,7 +704,7 @@ function parseAces(config) {
                     return;
                 }
 
-                let ts = readFileSync(args.path).toString('utf-8');
+                let ts = readFileSync(normalized).toString('utf-8');
 
                 if (!hasDecorators(ts)) {
                     return;
@@ -715,7 +715,7 @@ function parseAces(config) {
                 try {
                     parsed = parseScript(ts)
                 } catch (error) {
-                    const relativePath = join(config.sourcePath, args.path.replace(filepath(config.sourcePath), ''));
+                    const relativePath = join(config.sourcePath, normalized.replace(filepath(config.sourcePath), ''));
                     throw Error('Script ' + chalk.bold(relativePath) + ' ' + error)
                 }
 
