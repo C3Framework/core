@@ -31,8 +31,50 @@ module ClassUtils {
                 })
         }];
     }
+
+    // TODO: Wait for SDKv2 to implement loops...
+    // export function _loop(
+    //     inst: C3Instances,
+    //     array: any[],
+    //     callback: (item: any, index: number) => {},
+    //     onEndCallback?: Function) {
+    //     // Get necessary references
+    //     const runtime = inst.runtime;
+    //     const eventSheetManager = runtime.GetEventSheetManager();
+    //     const currentEvent = runtime.GetCurrentEvent();
+    //     const solModifiers = currentEvent.GetSolModifiers();
+    //     const eventStack = runtime.GetEventStack();
+
+    //     // Get current stack frame and push new one
+    //     const oldFrame = eventStack.GetCurrentStackFrame();
+    //     const newFrame = eventStack.Push(currentEvent);
+
+    //     for (const [index, item] of array.entries()) {
+    //         callback(item, index);
+
+    //         // Push a copy of the current SOL
+    //         eventSheetManager.PushCopySol(solModifiers);
+
+    //         // Retrigger the current event, running a single loop iteration
+    //         currentEvent.Retrigger(oldFrame, newFrame);
+
+    //         // Pop the current SOL
+    //         eventSheetManager.PopSol(solModifiers);
+    //     }
+
+    //     if (onEndCallback) {
+    //         onEndCallback();
+    //     }
+
+    //     // Pop the event stack frame
+    //     eventStack.Pop();
+
+    //     // Return false since event already executed
+    //     return false;
+    // }
 }
 
+type C3Instances = ISDKWorldInstanceBase_ | ISDKInstanceBase_ | ISDKBehaviorInstanceBase_<ISDKWorldInstanceBase_ | ISDKInstanceBase_>;
 
 
 export interface IC3FrameworkInstance {
