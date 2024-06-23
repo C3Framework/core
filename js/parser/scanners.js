@@ -1,6 +1,6 @@
 import { fileExtension, filepath, trimPathSlashes, writeFileRecursively } from '../utils.js';
-import { existsSync, readFileSync, readdirSync } from 'fs';
-import { isAbsolute } from 'path';
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, statfsSync } from 'fs';
+import { isAbsolute, join } from 'path';
 import { buildFile } from '../parser.js';
 import { DEFAULT_IMPORT_TYPE } from '../constants.js';
 
@@ -16,7 +16,7 @@ function getImportTypeByExtension(ext) {
 
 async function processDependencyFile(config, filename, ext, type) {
     const input = filepath(config.libPath, filename);
-    let output = filepath(config.exportPath, 'c3runtime/libs', filename);
+    let output = filepath(config.exportPath, 'libs', filename);
     output = output.replace(/\.ts$/, '.js');
 
     if (ext === 'ts') {
@@ -64,37 +64,53 @@ export async function getFileListFromConfig(config, addon) {
 
     if (!existsSync(libPath)) return {};
 
-    const files = await readdirSync(libPath).reduce(async (objP, filename) => {
-        const obj = await objP;
+    const files = {};
 
-        if (filename.startsWith('.')) {
-            return obj;
-        }
+    const scan = async (dirname) => {
+        readdirSync(dirname).forEach(async (filename) => {
+            if (filename.startsWith('.')) {
+                return;
+            }
 
-        const ext = fileExtension(filename);
-        let importType;
+            const fullPath = join(dirname, filename);
 
-        if (copyConfig[filename]) {
-            importType = copyConfig[filename];
-            delete copyConfig[filename];
-        } else {
-            importType = getImportTypeByExtension(ext);
-        }
+            if (statSync(fullPath).isDirectory()) {
+                mkdirSync(filepath(config.exportPath, 'libs', fullPath.replace(libPath, '')), {
+                    recursive: true
+                });
 
-        let output = await processDependencyFile(
-            config,
-            filename,
-            ext,
-            importType
-        );
+                return scan(fullPath);
+            }
 
-        if (isAbsolute(output)) {
-            output = trimPathSlashes(output.replace(exportPath, ''));
-        }
+            filename = fullPath.replace(libPath, '');
 
-        obj[output] = importType;
-        return obj;
-    }, Promise.resolve({}));
+            const ext = fileExtension(filename);
+            let importType;
+
+            if (copyConfig[filename]) {
+                importType = copyConfig[filename];
+                delete copyConfig[filename];
+            } else {
+                importType = getImportTypeByExtension(ext);
+            }
+
+            let output = await processDependencyFile(
+                config,
+                filename,
+                ext,
+                importType
+            );
+
+            if (isAbsolute(output)) {
+                output = trimPathSlashes(output.replace(exportPath, ''));
+            }
+
+            files[output] = importType;
+        });
+    };
+
+    await scan(libPath);
+
 
     // There's a mismatch betwwen the files from libs and 
     // the files on the config... 
