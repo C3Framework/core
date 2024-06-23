@@ -272,14 +272,13 @@ function langFromConfig(config, addon, aces) {
             }
         });
 
-        const ungroupedAces = aceList();
-
-        Object.keys(aces)
+        const ungroupedAces = Object.keys(aces)
             .reduce((dict, k) => {
                 for (const type in dict) {
                     dict[type] = [...dict[type], ...aces[k][type]];
                 }
-            }, ungroupedAces);
+                return dict;
+            }, aceList());;
 
         root.actions = {};
         Object.keys(ungroupedAces.actions).forEach((key) => {
