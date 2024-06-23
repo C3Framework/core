@@ -1,4 +1,4 @@
-import { PLURAL_ADDON, registerEditorClass } from "..";
+import { ADDON_NAMESPACE, registerEditorClass } from "..";
 import { AddonConfig, BuiltAddonConfig } from "./config";
 
 module ClassUtils {
@@ -9,12 +9,12 @@ module ClassUtils {
         }
 
         inst.dispatchEvent(new globalThis.C3.Event(type));
-        inst._trigger(globalThis.C3.Behaviors[config.id].Cnds[type]);
+        inst._trigger(globalThis.C3[ADDON_NAMESPACE[config.addonType]][config.id].Cnds[type]);
     }
 
     /** @internal */
     export function _getDebuggerProperties(inst: any, config: AddonConfig) {
-        const prefix = PLURAL_ADDON[config.addonType] + "." + config.id.toLocaleLowerCase();
+        const prefix = ADDON_NAMESPACE[config.addonType] + "." + config.id.toLocaleLowerCase();
         const props = inst.debugProperties();
         return [{
             title: "$" + config.name,

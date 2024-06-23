@@ -37,13 +37,13 @@ interface InitAddonOpts {
 
 type C3AddonBase = any;
 
-export const PLURAL_ADDON = {
-    behavior: 'behaviors',
-    plugin: 'plugins',
+export const ADDON_NAMESPACE = {
+    behavior: 'Behaviors',
+    plugin: 'Plugins',
 };
 
 export function registerEditorClass(inst: any, SDK: any, config: BuiltAddonConfig) {
-    const addonType = PLURAL_ADDON[config.addonType];
+    const addonType = ADDON_NAMESPACE[config.addonType]?.toLowerCase();
 
     if (!addonType) throw new Error("Unexpected addon type trying to be registered");
 
