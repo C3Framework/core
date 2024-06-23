@@ -1,5 +1,5 @@
 import mime from 'mime';
-import { BuiltAddonConfig, PluginConfig } from './types/config';
+import { BuildConfig, BuiltAddonConfig, PluginConfig } from './types/config';
 import { Behavior, Plugin } from './types/classes';
 
 export * from './types/decorators';
@@ -182,7 +182,10 @@ export function initPlugin(C3: any, config: BuiltAddonConfig, opts?: InitAddonOp
 
     A_C.Type = opts?.Type ?? Plugin.Type(config);
 
-    A_C.Instance = opts?.Instance ?? Plugin.Instance(config);
+    A_C.Instance = opts?.Instance ?? (config.type === 'object' ?
+        Plugin.Instance(config, globalThis.ISDKInstanceBase) :
+        Plugin.Instance(config, globalThis.ISDKWorldInstanceBase)
+    );
 
     injectAces(A_C, config)
 
