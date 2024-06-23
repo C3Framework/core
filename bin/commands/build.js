@@ -669,7 +669,7 @@ function parseScript(ts) {
                 ...config,
                 id,
                 displayText: displayText.replace("{title}", title),
-                listName: config.listName ?? title,
+                listName: config.listName ?? (decoratorName !== "Expression" ? title : id),
                 category,
                 params,
                 description: config.description ?? '',
