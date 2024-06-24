@@ -97,6 +97,18 @@ function getParserType(typeArg = '') {
     return TS_Types[type] ?? (type.startsWith('TS') ? 'any' : type);
 }
 
+function astToValue(ast) {
+    let value;
+
+    try {
+        value = eval(escodegen.generate(ast));
+    } catch (error) {
+        throw Error(`Couldn\'t obtain value from AST`)
+    }
+
+    return value;
+}
+
 function getDecoratorParams(decoratorParams = {}) {
     return decoratorParams?.properties
         ?.reduce((obj, v) => {
@@ -104,7 +116,7 @@ function getDecoratorParams(decoratorParams = {}) {
                 obj[v.key.name] = v.value.value;
             } else { // Complex value
                 try {
-                    obj[v.key.name] = eval(escodegen.generate(v.value));
+                    obj[v.key.name] = astToValue(v.value);
                 } catch (error) {
                     throw Error(`ACE parameter '${v.key.name}' is not compilable. Use static values.`)
                 }
@@ -117,7 +129,15 @@ function getAceDecoratorConfig(decorator, decoratorParams = []) {
     switch (decorator) {
         case 'Action':
         case 'Condition':
-            return getDecoratorParams(decoratorParams[1]);
+            const params = getDecoratorParams(decoratorParams[1]);
+
+            if (params.displayText === undefined) {
+                try {
+                    params.displayText = astToValue(decoratorParams[0]) ?? undefined;
+                } catch (_) { }
+            }
+
+            return params;
         case 'Expression':
             return getDecoratorParams(decoratorParams[0]);
         case 'Trigger':
@@ -559,6 +579,19 @@ function searchTopClasses(tree) {
     return tree.body.filter(node => node.type === 'ClassDeclaration');
 }
 
+function displayTextWithParams(displayText, params) {
+    displayText = displayText.trim();
+
+    return displayText + " (" + Object.keys(params).map(v => `{${v}}`).join(', ') + ")";
+}
+
+function displayTextStripParams(displayText) {
+    return displayText.replace(/{\d+}|{my}/g, '')
+        .replace(/\s+/, ' ')
+        .replace(/\(\s?\)/, '')
+        .trim();
+}
+
 /**
  * @returns {esbuild.OnLoadResult|null|undefined} 
  */
@@ -651,11 +684,14 @@ function parseScript(ts) {
             if (!displayText) {
                 // Auto-assign params to display text
                 if (params.length) {
-                    displayText = title + " (" + Object.keys(params).map(v => `{${v}}`).join(', ') + ")";
+                    displayText = displayTextWithParams(title, params);
                 } else {
                     displayText = title;
                 }
             }
+
+            const listName = config.listName ??
+                (decoratorName !== "Expression" ? displayTextStripParams(displayText) : id);
 
             if (!aces[category]) {
                 aces[category] = {};
@@ -669,7 +705,7 @@ function parseScript(ts) {
                 ...config,
                 id,
                 displayText: displayText.replace("{title}", title),
-                listName: config.listName ?? (decoratorName !== "Expression" ? title : id),
+                listName: listName.replace("{title}", title),
                 category,
                 params,
                 description: config.description ?? '',
