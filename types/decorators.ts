@@ -15,6 +15,7 @@ type C3Type = combo
     | color;
 
 interface IAction {
+    listName?: string;
     displayText?: string;
     description?: string;
     category?: string;
@@ -24,6 +25,7 @@ interface IAction {
 }
 
 interface ICondition {
+    listName?: string;
     displayText?: string;
     category?: string;
     description?: string;
