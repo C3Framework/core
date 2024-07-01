@@ -35,7 +35,10 @@ function getExampleList(config) {
 }
 
 function getProperties(addon) {
-    return addon.properties.map((property) => `| ${property.name} | ${property.desc} | ${property.type} |`).join("\n");
+    return addon.properties.map((property) => {
+        const desc = (property.desc ?? '').replace(/\n+/g, ' ');
+        return `| ${property.name} | ${desc} | ${property.type} |`;
+    }).join("\n");
 }
 
 function getAces(aces, lang) {
@@ -55,8 +58,9 @@ function getAces(aces, lang) {
                     });
                 }
 
+                const desc = aceLang['description'].replace(/\n+/, ' ');
                 line.push(
-                    `| ${aceLang['list-name'] ?? aceLang['translated-name']} | ${aceLang['description']} |` + (withReturnType ? ` ${ace.returnType} |` : '') + ` ${paramString} |`
+                    `| ${aceLang['list-name'] ?? aceLang['translated-name']} | ${desc} |` + (withReturnType ? ` ${ace.returnType} |` : '') + ` ${paramString} |`
                 );
             });
         });
