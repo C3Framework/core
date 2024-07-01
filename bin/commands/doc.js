@@ -22,7 +22,7 @@ function getExampleList(config) {
 
             const images = readdirSync(examplesPath).filter((img) => img.match(/\.(jpg|png|gif|jpeg)$/) && img.startsWith(name));
 
-            if (images) {
+            if (images.length) {
                 const image = "./" + join(config.examplesPath, images[0]);
 
                 elements.push(`<img src="${image}" width="200" />`);
