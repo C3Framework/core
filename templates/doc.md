@@ -67,20 +67,20 @@ The files defined with `@AceClass` contain all the Actions, Conditions and Expre
 
 ## Actions
 
-| Action | Description | Params
+| Action | Description | Params |
 | --- | --- | --- |
 {{$actions}}
 
 ---
 ## Conditions
 
-| Condition | Description | Params
+| Condition | Description | Params |
 | --- | --- | --- |
 {{$conditions}}
 
 ---
 ## Expressions
 
-| Expression | Description | Return Type | Params
+| Expression | Description | Return Type | Params |
 | --- | --- | --- | --- |
 {{$expressions}}
