@@ -662,6 +662,10 @@ function parseScript(ts) {
 
             const method = v.value;
 
+            if (config.isAsync === undefined && method.async === true) {
+                config.isAsync = true;
+            }
+
             if (!returnType && method.returnType) {
                 returnType = getParserType(method.returnType);
             }
