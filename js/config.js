@@ -13,6 +13,7 @@ const defaultConfig = {
     libPath: 'src/libs',
     addonScript: 'addon.ts',
     runtimeScript: 'runtime.ts',
+    themeStyle: 'theme.scss',
     defPath: 'src/',
     exportPath: 'export/',
     examplesPath: 'examples/',

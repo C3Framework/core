@@ -37,11 +37,12 @@ import {
 } from '../../js/constants.js';
 
 import { buildConfig as bc, loadBuildConfig, tsConfig } from '../../js/config.js';
-import { addonJson, buildFile, resetParsedConfig } from '../../js/parser.js';
+import { addonJson, buildFile, loadAddonConfig, resetParsedConfig } from '../../js/parser.js';
 import { __, loadLanguage, resetLoadedLangs } from '../../js/lang.js';
 import * as cli from '../../js/cli.js';
 import chalk from 'chalk';
 import { join, normalize } from 'path';
+import { buildTheme } from './theme.js';
 
 function emptyExport() {
     const exportPath = filepath(bc().exportPath);
@@ -204,19 +205,29 @@ async function addonFromConfig(config, addon) {
         website: addon.website,
         documentation: addon.documentation,
         description: addon.description,
-        "editor-scripts": addon?.editorScripts ?? [],
+        ...(addon.addonType !== 'theme' ? {
+            "editor-scripts": addon?.editorScripts ?? [],
+        } : {
+            stylesheets: [
+                'theme.css'
+            ]
+        }),
         "file-list": [
-            "c3runtime/actions.js",
-            "c3runtime/conditions.js",
-            "c3runtime/expressions.js",
-            "c3runtime/instance.js",
-            `c3runtime/${addon.addonType}.js`,
-            "c3runtime/type.js",
-            "lang/en-US.json",
-            "aces.json",
             "addon.json",
+            ...(addon.addonType !== 'theme' ? [
+                "aces.json",
+                "editor.js",
+                "c3runtime/actions.js",
+                "c3runtime/conditions.js",
+                "c3runtime/expressions.js",
+                "c3runtime/instance.js",
+                `c3runtime/${addon.addonType}.js`,
+                "c3runtime/type.js",
+            ] : [
+                'theme.css'
+            ]),
+            "lang/en-US.json",
             addon.icon ? addon.icon : "icon.svg",
-            "editor.js",
             ...Object.keys(addon.fileDependencies),
         ],
     };
@@ -263,6 +274,10 @@ function langFromConfig(config, addon, aces) {
             lang.text.effects = {};
             lang.text.effects[id] = {};
             root = lang.text.effects[id];
+        } else if (addon.addonType === 'theme') {
+            lang.text.themes = {};
+            lang.text.themes[id] = {};
+            root = lang.text.themes[id];
         } else {
             throw new Error("Invalid addon type");
         }
@@ -275,22 +290,24 @@ function langFromConfig(config, addon, aces) {
             root.aceCategories[key] = __(addon.aceCategories[key]);
         }
 
-        root.properties = {};
-        addon.properties.forEach((property) => {
-            root.properties[property.id] = {
-                name: __(property.name),
-                desc: __(property.desc),
-            };
-            if (property.type === "combo") {
-                root.properties[property.id].items = {};
-                property.options.items.forEach((item) => {
-                    const key = Object.keys(item)[0];
-                    root.properties[property.id].items[key] = __(item[key]);
-                });
-            } else if (property.type === "link") {
-                root.properties[property.id]["link-text"] = __(property.linkText);
-            }
-        });
+        if (addon.properties) {
+            root.properties = {};
+            addon.properties?.forEach((property) => {
+                root.properties[property.id] = {
+                    name: __(property.name),
+                    desc: __(property.desc),
+                };
+                if (property.type === "combo") {
+                    root.properties[property.id].items = {};
+                    property.options.items.forEach((item) => {
+                        const key = Object.keys(item)[0];
+                        root.properties[property.id].items[key] = __(item[key]);
+                    });
+                } else if (property.type === "link") {
+                    root.properties[property.id]["link-text"] = __(property.linkText);
+                }
+            });
+        }
 
         const ungroupedAces = Object.keys(aces)
             .reduce((dict, k) => {
@@ -527,7 +544,10 @@ function acesFromConfig(config) {
 function distribute(config, addon) {
     // zip the content of the export folder and name it with the plugin id and version and use .c3addon as extension
     const zip = new AdmZip();
-    zip.addLocalFolder(filepath(config.exportPath, "c3runtime"), "c3runtime");
+
+    if (existsSync(filepath(config.exportPath, "c3runtime"))) {
+        zip.addLocalFolder(filepath(config.exportPath, "c3runtime"), "c3runtime");
+    }
     zip.addLocalFolder(filepath(config.exportPath, "lang"), "lang");
 
     // for each remaining file in the root export folder
@@ -765,9 +785,41 @@ function parseAces(config) {
     };
 }
 
+export function writeLanguages() {
+    const config = bc();
+    const langs = langFromConfig(config, addonJson, aces);
+
+    for (const lang in langs) {
+        const langFile = langs[lang];
+        writeFileSync(filepath(config.exportPath, "lang/", lang + ".json"), JSON.stringify(langFile, null, 2));
+    }
+}
+
+export async function writeAddonConfig() {
+    const config = bc();
+    writeFileSync(filepath(config.exportPath, "addon.json"), JSON.stringify(await addonFromConfig(config, addonJson), null, 2))
+}
+
+export function writeIcon() {
+    const config = bc();
+
+    if (addonJson.icon) {
+        copyFileSync(filepath(config.sourcePath, addonJson.icon), filepath(config.exportPath, addonJson.icon));
+    } else {
+        copyFileSync(filepath(config.sourcePath, "icon.svg"), filepath(config.exportPath, "icon.svg"));
+    }
+}
+
 // TODO: Abstract everything from the parser to its own parser module
 async function build() {
     const config = await loadBuildConfig();
+
+    await loadAddonConfig(filepath(config.sourcePath, config.addonScript));
+
+    if (addonJson.addonType === 'theme') {
+        await buildTheme();
+        return;
+    }
 
     ensureFoldersExists();
     createEmptyFiles();
@@ -781,14 +833,8 @@ async function build() {
     writeFileSync(filepath(config.exportPath, `c3runtime/${addonJson.addonType}.js`), main);
     writeFileSync(filepath(config.exportPath, "aces.json"), JSON.stringify(acesFromConfig(aces), null, 2));
 
-    const langs = langFromConfig(config, addonJson, aces);
-
-    for (const lang in langs) {
-        const langFile = langs[lang];
-        writeFileSync(filepath(config.exportPath, "lang/", lang + ".json"), JSON.stringify(langFile, null, 2));
-    }
-
-    writeFileSync(filepath(config.exportPath, "addon.json"), JSON.stringify(await addonFromConfig(config, addonJson), null, 2));
+    writeLanguages();
+    await writeAddonConfig();
 
     await Promise.all(
         addonJson.editorScripts.map(async (v) => {
@@ -808,11 +854,7 @@ async function build() {
         })
     );
 
-    if (addonJson.icon) {
-        copyFileSync(filepath(config.sourcePath, addonJson.icon), filepath(config.exportPath, addonJson.icon));
-    } else {
-        copyFileSync(filepath(config.sourcePath, "icon.svg"), filepath(config.exportPath, "icon.svg"));
-    }
+    writeIcon();
 }
 
 async function runServer(callback = async () => { }, {

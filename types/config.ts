@@ -23,6 +23,14 @@ export interface AddonConfig extends C3Ide2.ProjectAddon {
     }
 }
 
+export interface ThemeConfig extends C3Ide2.ProjectAddon {
+    addonType: "theme";
+    colors: {
+        background?: string[] | string,
+        pallete: { [key: string]: string },
+    };
+}
+
 export interface BehaviorConfig extends AddonConfig {
     addonType: "behavior",
     info?: {
@@ -144,4 +152,9 @@ export interface BuildConfig {
      * @default 'en-US'
      */
     defaultLang?: string,
+    /**
+     * The name of the main SCSS file for themes
+     * @default 'theme.scss'
+     */
+    themeStyle?: string,
 }

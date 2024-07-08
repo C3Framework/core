@@ -8,6 +8,13 @@ import { join } from 'path';
 /** @type {import('../index.js').BuiltAddonConfig} */
 export let addonJson;
 
+export async function loadAddonConfig(path) {
+    if (addonJson) return addonJson;
+
+    const addon = await parseAddonScript(path, acesRuntime);
+    addonJson = await mutateAddonConfig(addon);
+}
+
 /**
  * @param {import('../types/config.js').BuildConfig} config  
  * @returns {import('esbuild').Plugin} 
@@ -23,8 +30,7 @@ function parserAddon(config) {
 
                 if (addonJson) return contents();
 
-                const addon = await parseAddonScript(file.path, acesRuntime);
-                addonJson = await mutateAddonConfig(addon);
+                await loadAddonConfig(file.path)
 
                 return contents();
             });
