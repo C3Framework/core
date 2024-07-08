@@ -124,6 +124,7 @@ function compile(entryPoint, isString = false) {
 
     const compile = isString ? sass.compileString : sass.compile;
     const result = compile(entryPoint, {
+        charset: false,
         style: config.minify ? 'compressed' : 'expanded'
     });
 
