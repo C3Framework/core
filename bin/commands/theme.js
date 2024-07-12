@@ -1,20 +1,18 @@
-import { buildConfig as bc, loadBuildConfig, tsConfig } from '../../js/config.js';
-import { addonJson, loadAddonConfig } from "../../js/parser.js";
+import { buildConfig as bc, loadBuildConfig } from '../../js/config.js';
+import { addonJson, loadAddonConfig, setAddonJson } from "../../js/parser.js";
 import { filepath, removeFilesRecursively, titleCase } from '../../js/utils.js';
 import {
-    closeSync,
     copyFileSync,
     existsSync,
     mkdirSync,
-    openSync,
     readFileSync,
-    readdirSync,
     writeFileSync
 } from 'fs';
-import { writeAddonConfig, writeIcon, writeLanguages } from './build.js';
+import { isDev, writeAddonConfig, writeLanguages } from './build.js';
 import * as sass from 'sass';
 import convert from 'color-convert';
 import { hexToFilter } from '../../js/vendor/hexToFilter.js';
+import { join } from 'path';
 
 const BODIES_TARGETS = ['body', '#startPage2Wrap', '#exampleBrowserWrap'];
 
@@ -31,7 +29,7 @@ function ensureFoldersExists() {
 
     const exportPath = bc().exportPath;
 
-    mkdirSync(filepath(exportPath));
+    mkdirSync(filepath(exportPath), { recursive: true });
     mkdirSync(filepath(exportPath, "lang"));
 }
 
@@ -131,6 +129,26 @@ function compile(entryPoint, isString = false) {
     return result.css;
 }
 
+function writeIcon(primary, replace = null) {
+    const config = bc();
+
+    const filename = addonJson.icon ?? "icon.svg";
+    const src = filepath(config.sourcePath, filename);
+    const out = filepath(config.exportPath, filename);
+
+    if (src.endsWith('.svg') && replace && (primary !== replace)) {
+        let svg = readFileSync(src, { encoding: 'utf-8' });
+
+        while (svg.includes(primary)) {
+            svg = svg.replace(primary, replace);
+        }
+        writeFileSync(out, svg);
+
+    } else {
+        copyFileSync(src, out);
+    }
+}
+
 export async function buildTheme() {
     const config = await loadBuildConfig();
 
@@ -138,22 +156,73 @@ export async function buildTheme() {
 
     themeJson = addonJson;
 
-    ensureFoldersExists();
+    /** @returns {import('../../types/config.js').ThemeConfig} */
+    const cloneConfig = () => JSON.parse(JSON.stringify(themeJson));
 
-    writeLanguages();
-    writeAddonConfig();
+    const primary = themeJson.colors?.pallete?.primary.toLowerCase();
 
-    writeIcon();
+    const build = (replace = null) => {
+        ensureFoldersExists();
 
-    const entryPoint = filepath(config.sourcePath, config.themeStyle);
+        writeLanguages();
+        writeAddonConfig();
 
-    let css = compile(entryPoint);
-    css = appendBackground(css);
-    css = appendPallete(css);
-    css = compile(css, true);
+        writeIcon(primary, replace);
 
-    writeFileSync(
-        filepath(config.exportPath, 'theme.css'),
-        css
-    );
+        const entryPoint = filepath(config.sourcePath, config.themeStyle);
+
+        let css = compile(entryPoint);
+        css = appendBackground(css);
+        css = appendPallete(css);
+        css = compile(css, true);
+
+        writeFileSync(
+            filepath(config.exportPath, 'theme.css'),
+            css
+        );
+    };
+
+    const variants = themeJson.variants;
+    if (variants && !isDev) {
+        const themes = Object.keys(variants).map((variant) => {
+            const variantName = titleCase(variant);
+            const variantConfig = cloneConfig();
+            const overrides = variants[variant];
+
+            delete variantConfig.variants;
+
+            variantConfig.id = `${variantConfig.id}-${variant}`;
+            variantConfig.name = variantConfig.name.trim() + ` (${variantName})`;
+            variantConfig.colors.background = overrides.background ?? variantConfig.colors.background;
+            variantConfig.colors.pallete = {
+                ...(variantConfig.colors.pallete ?? {}),
+                ...(overrides.pallete ?? {})
+            };
+
+            return variantConfig;
+        });
+
+        const main = cloneConfig()
+
+        delete main.variants;
+
+        themes.push(main);
+
+        const originalConfig = JSON.parse(JSON.stringify(config));
+        themes.forEach((theme) => {
+            themeJson = {
+                ...theme,
+                variants
+            };
+            setAddonJson(themeJson);
+
+            config.exportPath = join(originalConfig.exportPath, theme.id);
+
+            build(themeJson.colors?.pallete?.primary.toLowerCase());
+        });
+        config.exportPath = originalConfig.exportPath;
+        return;
+    }
+
+    build();
 }

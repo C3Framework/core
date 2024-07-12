@@ -23,12 +23,15 @@ export interface AddonConfig extends C3Ide2.ProjectAddon {
     }
 }
 
+type ThemeColors = {
+    background?: string[] | string,
+    pallete?: { [key: string]: string },
+};
+
 export interface ThemeConfig extends C3Ide2.ProjectAddon {
     addonType: "theme";
-    colors: {
-        background?: string[] | string,
-        pallete: { [key: string]: string },
-    };
+    colors: ThemeColors;
+    variants?: { [key: string]: ThemeColors };
 }
 
 export interface BehaviorConfig extends AddonConfig {

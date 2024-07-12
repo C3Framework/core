@@ -8,6 +8,10 @@ import { join } from 'path';
 /** @type {import('../index.js').BuiltAddonConfig} */
 export let addonJson;
 
+export function setAddonJson(v) {
+    addonJson = v;
+}
+
 export async function loadAddonConfig(path) {
     if (addonJson) return addonJson;
 

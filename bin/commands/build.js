@@ -543,30 +543,59 @@ function acesFromConfig(config) {
  */
 function distribute(config, addon) {
     // zip the content of the export folder and name it with the plugin id and version and use .c3addon as extension
-    const zip = new AdmZip();
+    const zipFolder = (suffix = '') => {
+        const zip = new AdmZip();
 
-    if (existsSync(filepath(config.exportPath, "c3runtime"))) {
-        zip.addLocalFolder(filepath(config.exportPath, "c3runtime"), "c3runtime");
-    }
-    zip.addLocalFolder(filepath(config.exportPath, "lang"), "lang");
-
-    // for each remaining file in the root export folder
-    readdirSync(filepath(config.exportPath)).forEach((file) => {
-        // if the file is not the c3runtime or lang folder
-        if (file !== "c3runtime" && file !== "lang") {
-            // add it to the zip
-            zip.addLocalFile(filepath(config.exportPath, file), "");
+        if (existsSync(filepath(config.exportPath, "c3runtime"))) {
+            zip.addLocalFolder(filepath(config.exportPath, "c3runtime"), "c3runtime");
         }
-    });
+        zip.addLocalFolder(filepath(config.exportPath, "lang"), "lang");
 
-    const distPath = filepath(config.distPath);
+        // for each remaining file in the root export folder
+        readdirSync(filepath(config.exportPath)).forEach((file) => {
+            // if the file is not the c3runtime or lang folder
+            if (file !== "c3runtime" && file !== "lang") {
+                // add it to the zip
+                zip.addLocalFile(filepath(config.exportPath, file), "");
+            }
+        });
 
-    // if dist folder does not exist, create it
-    if (!existsSync(distPath)) {
-        mkdirSync(distPath);
+        const distPath = filepath(config.distPath);
+
+        // if dist folder does not exist, create it
+        if (!existsSync(distPath)) {
+            mkdirSync(distPath);
+        }
+
+        let c3AddonName;
+
+        if (suffix) {
+            c3AddonName = `${addon.id}-${suffix}-${addon.version}`;
+        } else {
+            c3AddonName = `${addon.id}-${addon.version}`;
+        }
+
+        zip.writeZip(filepath(config.distPath, `${c3AddonName}.c3addon`));
+    };
+
+    if (addon.addonType == 'theme' && addon.variants) {
+        const originalConfig = JSON.parse(JSON.stringify(config));
+
+        config.exportPath = join(originalConfig.exportPath, addonJson.id);
+        zipFolder();
+
+        Object.keys(addon.variants).forEach((theme) => {
+            config.exportPath = join(originalConfig.exportPath, `${addonJson.id}-${theme}`);
+
+            zipFolder(theme);
+        });
+
+        config = originalConfig;
+        return;
     }
 
-    zip.writeZip(filepath(config.distPath, `${addon.id}-${addon.version}.c3addon`));
+
+    zipFolder();
 }
 
 // Collection of ACEs by group for aces.json
@@ -933,9 +962,12 @@ async function runServer(callback = async () => { }, {
     tryListen();
 }
 
+export let isDev = false;
+
 export default async function (devBuild = false, serverOpts = {}, {
     dist = true
 } = {}) {
+    isDev = devBuild;
     if (devBuild) {
         runServer(async () => {
             aces = {};
