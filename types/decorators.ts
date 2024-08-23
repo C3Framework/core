@@ -60,7 +60,7 @@ interface IParam {
     initialValue?: any;
     items?: Array<{ [key: string]: string }>;
     allowedPluginIds?: string[];
-    autocompleteId?: string;
+    autocompleteId?: string | true;
 }
 
 // * Decorators are purely syntax suggar, they are removed on compilation
