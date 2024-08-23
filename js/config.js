@@ -18,6 +18,7 @@ const defaultConfig = {
     exportPath: 'export/',
     examplesPath: 'examples/',
     distPath: 'dist/',
+    autoCompleteHash: false,
 };
 
 /** @type {import('../types/config.js').BuildConfig} */

@@ -43,6 +43,7 @@ import * as cli from '../../js/cli.js';
 import chalk from 'chalk';
 import { join, normalize } from 'path';
 import { buildTheme } from './theme.js';
+import { md5 } from 'super-fast-md5';
 
 function emptyExport() {
     const exportPath = filepath(bc().exportPath);
@@ -166,7 +167,13 @@ function formatAutoCompleteId(autocompleteId, paramId, methodId) {
         return;
     }
 
-    return `${addonJson.id}:${autocompleteId}`;
+    autocompleteId = `${addonJson.id}:${autocompleteId}`;
+
+    if (bc().autoCompleteHash) {
+        autocompleteId = md5(autocompleteId);
+    }
+
+    return autocompleteId;
 }
 
 function formatParam(param = {}, methodId = null) {
