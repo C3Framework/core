@@ -43,6 +43,7 @@ import * as cli from '../../js/cli.js';
 import chalk from 'chalk';
 import { join, normalize } from 'path';
 import { buildTheme } from './theme.js';
+import { md5 } from 'super-fast-md5';
 
 function emptyExport() {
     const exportPath = filepath(bc().exportPath);
@@ -157,8 +158,26 @@ function getAceDecoratorConfig(decorator, decoratorParams = []) {
     }
 }
 
-function formatParam(param = {}) {
-    let id, initialValue, type;
+function formatAutoCompleteId(autocompleteId, paramId, methodId) {
+    if (autocompleteId === true) {
+        autocompleteId = `${methodId}:${paramId}`;
+    } else if (typeof autocompleteId === typeof '') {
+        autocompleteId = autocompleteId.trim();
+    } else {
+        return;
+    }
+
+    autocompleteId = `${addonJson.id}:${autocompleteId}`;
+
+    if (bc().autoCompleteHash) {
+        autocompleteId = md5(autocompleteId);
+    }
+
+    return autocompleteId;
+}
+
+function formatParam(param = {}, methodId = null) {
+    let id, initialValue, type, autocompleteId;
 
     if (param.type === 'Identifier') {
         id = param.name;
@@ -178,6 +197,7 @@ function formatParam(param = {}) {
     }
 
     config = getDecoratorParams(config[0]?.expression?.arguments[0]);
+    autocompleteId = formatAutoCompleteId(config.autocompleteId, id, methodId);
 
     return {
         ...config,
@@ -185,7 +205,8 @@ function formatParam(param = {}) {
         name: config.name ?? titleCase(id),
         desc: config.desc ?? '',
         type: config.type ?? type ?? 'any',
-        ...(initialValue ? { initialValue } : {})
+        ...(initialValue ? { initialValue } : {}),
+        ...(autocompleteId ? { autocompleteId } : {})
     }
 }
 
@@ -729,7 +750,7 @@ function parseScript(ts) {
                 if (v.decorators) {
                     v.decorators.forEach(v => removeDecorator(v));
                 }
-                return formatParam(v);
+                return formatParam(v, id);
             }) ?? [];
 
             let displayText = config.displayText;

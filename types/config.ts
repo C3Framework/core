@@ -160,4 +160,9 @@ export interface BuildConfig {
      * @default 'theme.scss'
      */
     themeStyle?: string,
+    /**
+     * Convert your autocomplete IDs to MD5 hashes
+     * @default false
+     */
+    autoCompleteHash?: boolean,
 }
