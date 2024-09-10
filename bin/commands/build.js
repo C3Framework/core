@@ -89,6 +89,11 @@ function getParserType(typeArg = '') {
         if (type === 'TSTypeReference') {
             type = typeArg.typeAnnotation?.typeName?.name;
         }
+
+        if (type === 'Promise') {
+            type = (typeArg.typeAnnotation.typeParameters.params ?? [])[0]?.type ?? 'TSAnyKeyword';
+        }
+
     }
 
 
