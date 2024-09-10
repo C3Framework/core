@@ -37,7 +37,7 @@ import {
 } from '../../js/constants.js';
 
 import { buildConfig as bc, loadBuildConfig, tsConfig } from '../../js/config.js';
-import { addonJson, buildFile, loadAddonConfig, resetParsedConfig } from '../../js/parser.js';
+import { addonJson, buildFile, readAddonConfig, resetParsedConfig } from '../../js/parser.js';
 import { __, loadLanguage, resetLoadedLangs } from '../../js/lang.js';
 import * as cli from '../../js/cli.js';
 import chalk from 'chalk';
@@ -869,9 +869,9 @@ export function writeIcon() {
 async function build() {
     const config = await loadBuildConfig();
 
-    await loadAddonConfig(filepath(config.sourcePath, config.addonScript));
-
-    if (addonJson.addonType === 'theme') {
+    // Only use to check initial config, don't use for ACE check
+    const partialAddonJson = await readAddonConfig(filepath(config.sourcePath, config.addonScript));
+    if (partialAddonJson.addonType === 'theme') {
         await buildTheme();
         return;
     }
@@ -884,6 +884,8 @@ async function build() {
     if (!addonJson) {
         throw Error(`Addon wasn't parsed properly. This may be due of not being able to find '${config.addonScript}'`);
     }
+
+    // addonJson is now available to use
 
     writeFileSync(filepath(config.exportPath, `c3runtime/${addonJson.addonType}.js`), main);
     writeFileSync(filepath(config.exportPath, "aces.json"), JSON.stringify(acesFromConfig(aces), null, 2));

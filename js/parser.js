@@ -15,8 +15,19 @@ export function setAddonJson(v) {
 export async function loadAddonConfig(path) {
     if (addonJson) return addonJson;
 
-    const addon = await parseAddonScript(path, acesRuntime);
-    addonJson = await mutateAddonConfig(addon);
+    addonJson = await readAddonConfig(path);
+}
+
+/**
+ * Be aware that if this is not read before of the
+ * parcing of @AceClass, no ACE will be included
+ * @param {string} path 
+ * @returns 
+ */
+export async function readAddonConfig(path) {
+    let addon = await parseAddonScript(path, acesRuntime);
+    addon = await mutateAddonConfig(addon);
+    return addon;
 }
 
 /**
