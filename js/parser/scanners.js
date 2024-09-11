@@ -82,7 +82,7 @@ export async function getFileListFromConfig(config, addon) {
                 return scan(fullPath);
             }
 
-            filename = fullPath.replace(libPath, '');
+            filename = trimPathSlashes(fullPath.replace(libPath, ''));
 
             const ext = fileExtension(filename);
             let importType;

@@ -64,7 +64,7 @@ export function registerEditorClass(inst: any, SDK: any, config: BuiltAddonConfi
         );
     }
 
-    if (config.fileDependencies?.length) {
+    if (config.fileDependencies && Object.keys(config.fileDependencies)?.length) {
         const fileDependencies = config.fileDependencies!;
         Object.keys(fileDependencies).forEach((filename: any) => {
             const type = fileDependencies[filename];
