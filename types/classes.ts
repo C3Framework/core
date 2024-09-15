@@ -211,7 +211,7 @@ export namespace Plugin {
         }
     };
 
-    export function Instance<T extends new (...args: any[]) => ISDKInstanceBase_ | ISDKWorldInstanceBase_>(config: BuiltAddonConfig, type: T) {
+    export function Instance<T extends new (...args: any[]) => ISDKInstanceBase_ | ISDKWorldInstanceBase_ | ISDKDOMPluginBase_>(config: BuiltAddonConfig, type: T) {
         // @ts-ignore
         return class extends type implements IC3FrameworkInstance {
             trigger(type: string | Function): void {

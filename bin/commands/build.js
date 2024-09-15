@@ -252,14 +252,16 @@ async function addonFromConfig(config, addon) {
             ] : [
                 'theme.css'
             ]),
-            "lang/en-US.json",
+            ...getLangs().map((v) => `lang/${v}.json`),
+            // TODO: Add language list
             addon.icon ? addon.icon : "icon.svg",
             ...Object.keys(addon.fileDependencies),
         ],
     };
 }
 
-function langFromConfig(config, addon, aces) {
+function getLangs() {
+    const config = bc();
     const jsonRegex = new RegExp("\\.json$");
     const langPath = filepath(config.langPath);
     let fileLangs = [];
@@ -275,9 +277,13 @@ function langFromConfig(config, addon, aces) {
         ...fileLangs
     ])];
 
+    return langs;
+}
+
+function langFromConfig(config, addon, aces) {
     let configs = {};
 
-    langs.forEach((languageTag) => {
+    getLangs().forEach((languageTag) => {
         loadLanguage(languageTag);
         let id = addon.id.toLowerCase();
 
