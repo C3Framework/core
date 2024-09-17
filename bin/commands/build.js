@@ -136,13 +136,20 @@ function getAceDecoratorConfig(decorator, decoratorParams = []) {
     switch (decorator) {
         case 'Action':
         case 'Condition':
-            const params = getDecoratorParams(decoratorParams[1]);
+            let params = {};
 
-            if (params.displayText === undefined) {
-                try {
-                    params.displayText = astToValue(decoratorParams[0]) ?? undefined;
-                } catch (_) { }
+            if (decoratorParams[0].type === 'ObjectExpression') {
+                params = getDecoratorParams(decoratorParams[0])
+            } else {
+                params = getDecoratorParams(decoratorParams[1])
+
+                if (params.displayText === undefined) {
+                    try {
+                        params.displayText = astToValue(decoratorParams[0]) ?? undefined;
+                    } finally { }
+                }
             }
+
 
             return params;
         case 'Expression':

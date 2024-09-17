@@ -68,7 +68,7 @@ interface IParam {
 /**
  * Action decorator
  */
-export function Action(displayText?: string, opts?: IAction): MethodDecorator {
+export function Action(displayTextOrOpts?: string | IAction, opts?: IAction): MethodDecorator {
     return function (target) {
     };
 }
@@ -84,7 +84,7 @@ export function Expression(opts?: IExpression): MethodDecorator {
 /**
  * Condition decorator
  */
-export function Condition(displayText?: string, opts?: ICondition): MethodDecorator {
+export function Condition(displayTextOrOpts?: string | ICondition, opts?: ICondition): MethodDecorator {
     return function (target) {
     };
 }
