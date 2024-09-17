@@ -667,7 +667,8 @@ function displayTextWithParams(displayText, params) {
 }
 
 function displayTextStripParams(displayText) {
-    return displayText.replace(/{\d+}|{my}/g, '')
+    return displayText.replace(/{\d+}(,\s+{\d+})*/, '')
+        .replace(/{\d+}|{my}/g, '')
         .replace(/\s+/, ' ')
         .replace(/\(\s?\)/, '')
         .trim();
