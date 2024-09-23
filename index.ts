@@ -292,5 +292,5 @@ declare global {
         type color = globalThis.color;
     }
 
-    var SDK: any;
+    // var SDK: any;
 }
