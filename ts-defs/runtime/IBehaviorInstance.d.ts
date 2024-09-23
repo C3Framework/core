@@ -20,7 +20,7 @@ declare class IBehaviorInstance<InstType>
 	dispatchEvent(evt: ConstructEvent): void;
 
 	readonly runtime: IRuntime;
-    readonly behavior: IBehavior;
+    readonly behavior: IBehavior_;
 	readonly behaviorType: IBehaviorType;
     readonly instance: InstType;
 }

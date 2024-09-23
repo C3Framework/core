@@ -3,6 +3,6 @@
 declare class IBehaviorType
 {
     readonly runtime: IRuntime;
-    readonly behavior: IBehavior;
+    readonly behavior: IBehavior_;
     readonly name: string;
 }

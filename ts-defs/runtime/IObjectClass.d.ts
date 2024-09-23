@@ -19,7 +19,7 @@ declare class IObjectClass<InstanceType extends IInstance, EventMapType = Object
 	readonly name: string;
 
 	readonly runtime: IRuntime;
-	readonly plugin: IPlugin;
+	readonly plugin: IPlugin_;
 
 	/** Get all instances belonging to this object type or family. */
 	getAllInstances<InstT extends InstanceType = InstanceType>(): InstT[];

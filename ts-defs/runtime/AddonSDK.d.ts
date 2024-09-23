@@ -40,6 +40,8 @@ declare class IDOMElementHandler extends IDOMHandler {
 
 declare class IRuntimeInterface {
     static AddDOMHandlerClass<T extends IDOMHandler>(clazz: new (iRuntime: IRuntimeInterface) => T): void;
+
+    GetExportType(): PlatformInfoExportType;    // note re-uses type from IPlatformInfoObjectType
 }
 
 declare var RuntimeInterface: typeof IRuntimeInterface;

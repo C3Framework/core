@@ -3,7 +3,7 @@ type PhysicsSteppingMode = "fixed" | "variable";
 
 /** Represents global settings with the Physics behavior.
  * @see {@link https://www.construct.net/make-games/manuals/construct-3/scripting/scripting-reference/behavior-interfaces/physics | IPhysicsBehaviorInstance documentation } */
-declare class IPhysicsBehavior extends IBehavior
+declare class IPhysicsBehavior extends IBehavior_
 {
 	worldGravity: number;
 	steppingMode: PhysicsSteppingMode;

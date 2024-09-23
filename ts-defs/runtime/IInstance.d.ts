@@ -23,7 +23,7 @@ declare class IInstance
 	
 	readonly runtime: IRuntime;
 	readonly objectType: IObjectType<this>;
-	readonly plugin: IPlugin;
+	readonly plugin: IPlugin_;
 
 	readonly uid: number;
 	readonly templateName: string;
@@ -32,8 +32,15 @@ declare class IInstance
 	restoreTimeScale(): void;
 	readonly dt: number;
 
+	hasTags(...tagsArray: string[]): boolean;
+	setAllTags(tagsSet: Set<string>): void;
+	getAllTags(): Set<string>;
+
 	destroy(): void;
 
 	getOtherContainerInstances(): IInstance[];
 	otherContainerInstances(): Iterable<IInstance>;
+
+	signal(tag: string): void;
+	waitForSignal(tag: string): Promise<void>;
 }

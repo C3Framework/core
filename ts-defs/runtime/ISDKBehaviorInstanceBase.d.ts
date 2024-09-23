@@ -7,6 +7,7 @@ declare class ISDKBehaviorInstanceBase_<InstType> extends IBehaviorInstance<Inst
     _release(): void;
     _getInitProperties(): SDKPropertyType[];
     _trigger(method: Function): void;
+    _triggerAsync(method: Function): Promise<void>;
 
     _setTicking(isTicking: boolean): void;
     _setTicking2(isTicking: boolean): void;

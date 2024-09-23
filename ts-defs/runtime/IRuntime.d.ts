@@ -16,7 +16,7 @@ type SamplingModeType = "nearest" | "bilinear" | "trilinear";
 
 type TextAlignHorizontalMode = "left" | "center" | "right";
 type TextAlignVerticalMode = "top" | "center" | "bottom";
-type TextWordWrapMode = "word" | "character";
+type TextWordWrapMode = "word" | "cjk" | "character";
 type TextDirectionMode = "ltr" | "rtl";
 
 interface TextFragmentPositionAndSize {
@@ -27,6 +27,7 @@ interface TextFragmentPositionAndSize {
 }
 
 type SDKPropertyType = number | string | boolean;
+type WrapperExtensionParameterType = number | string | boolean;
 
 type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array |Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array | BigInt64Array | BigUint64Array;
 type JSONValue = string | number | boolean | null
@@ -117,6 +118,7 @@ declare class IRuntime extends ConstructEventTarget<RuntimeEventMap>
 	readonly mouse?: IMouseObjectType<IInstance>;
 	readonly touch?: ITouchObjectType<IInstance>;
 	readonly platformInfo?: IPlatformInfoObjectType<IInstance>;
+	readonly sdk: ISDKUtils;
 
 	readonly layout: IAnyProjectLayout;
 	getLayout(nameOrIndex: LayoutParameter): IAnyProjectLayout;
@@ -138,6 +140,7 @@ declare class IRuntime extends ConstructEventTarget<RuntimeEventMap>
 	get gameTime(): number;
 	get wallTime(): number;
 	timeScale: number;
+	get isSuspended(): boolean;
 
 	/**
 	 * @deprecated Use framesPerSecond instead of fps
@@ -161,6 +164,9 @@ declare class IRuntime extends ConstructEventTarget<RuntimeEventMap>
 	 * although any additional parameters will be ignored. If the function has a
 	 * return value, it will be returned from this method, else it returns null. */
 	callFunction(name: string, ...params: CallFunctionParameter[]): CallFunctionReturnValue;
+
+	signal(tag: string): void;
+	waitForSignal(tag: string): Promise<void>;
 	
 	/** When called from an event sheet, sets the current function return value,
 	 * much like the 'Set return value' action.	 */
@@ -182,7 +188,10 @@ declare class IRuntime extends ConstructEventTarget<RuntimeEventMap>
 	/** Runtime wrapper for alert() method which can be used in worker mode. */
 	alert(message: string): Promise<void>;
 
-	addLoadPromise(promise: Promise<void>): void;
-
 	getHTMLLayer(index: number): HTMLElement;
+
+	/**
+	 * @deprecated Use runtime.sdk.addLoadPromise() instead of runtime.addLoadPromise()
+	 */
+	addLoadPromise(promise: Promise<void>): void;
 }

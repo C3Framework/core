@@ -1,25 +1,37 @@
 
-// Options for addChild()
-interface SceneGraphAddChildOpts {
-	transformX?: boolean;
-	transformY?: boolean;
-	transformWidth?: boolean;
-	transformHeight?: boolean;
-	transformAngle?: boolean;
-	transformZElevation?: boolean;
-	transformOpacity?: boolean;
-	transformVisibility?: boolean;
-	destroyWithParent?: boolean;
+// Hierarchy options returned by getHierarchyOpts()
+interface SceneGraphHierarchyOpts {
+	transformX: boolean;
+	transformY: boolean;
+	transformWidth: boolean;
+	transformHeight: boolean;
+	transformAngle: boolean;
+	transformZElevation: boolean;
+	transformOpacity: boolean;
+	transformVisibility: boolean;
+	destroyWithParent: boolean;
 }
 
+// Options for addChild(), based on SceneGraphHierarchyOpts but making every property optional
+type SceneGraphAddChildOpts = Partial<SceneGraphHierarchyOpts>;
+
 // Options for setMeshPoint()
-interface MeshPointOpts {
+interface SetMeshPointOpts {
 	mode?: "absolute" | "relative";
 	x: number;
 	y: number;
 	zElevation?: number;
 	u?: number;
 	v?: number;
+}
+
+// Options returned by getMeshPoint()
+interface GetMeshPointOpts {
+	x: number;
+	y: number;
+	zElevation: number;
+	u: number;
+	v: number;
 }
 
 /** Represents an instance of an object that appears in a layout.
@@ -77,9 +89,11 @@ declare class IWorldInstance extends IInstance
 	addChild(child: IWorldInstance, opts?: SceneGraphAddChildOpts): void;
 	removeChild(child: IWorldInstance): void;
 	removeFromParent(): void;
+	getHierarchyOpts(): SceneGraphHierarchyOpts;
 
 	createMesh(hsize: number, vsize: number): void;
 	releaseMesh(): void;
-	setMeshPoint(col: number, row: number, opts: MeshPointOpts): void;
+	setMeshPoint(col: number, row: number, opts: SetMeshPointOpts): void;
+	getMeshPoint(col: number, row: number): GetMeshPointOpts;
 	getMeshSize(): number[];
 }

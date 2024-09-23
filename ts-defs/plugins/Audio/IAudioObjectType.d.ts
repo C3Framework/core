@@ -5,4 +5,9 @@ declare class IAudioObjectType<InstType extends IInstance> extends IObjectType<I
 {
 	readonly audioContext: AudioContext;
 	readonly destinationNode: AudioDestinationNode;
+
+	isSilent: boolean;
+	masterVolume: number;
+
+	stopAll(): void;
 }
