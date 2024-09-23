@@ -244,7 +244,7 @@ declare global {
     type cmp = number;
     type objectname = string;
     type layer = string;
-    type layout = string;
+    type layout = ILayout;
     type keyb = string;
     type instancevar = string;
     type instancevarbool = string;
