@@ -11,6 +11,10 @@ export function titleCase(str) {
     );
 }
 
+export function lowerFirst(str = '') {
+    return str.charAt(0).toLowerCase() + str.substring(1);
+}
+
 export function trimPathSlashes(str = '') {
     return str.trim().replace(/^\.?(\/|\\)|(\\|\/)$/g, '');
 }

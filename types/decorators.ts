@@ -63,6 +63,21 @@ interface IParam {
     autocompleteId?: string | true;
 }
 
+interface ITriggerSimple extends ICondition {
+    id: string,
+    category: string
+}
+
+export interface IAceClass {
+    // modules?: Array<InstanceClasses | (new (...args: any[]) => any)>
+    triggers?: Array<ITriggerSimple | string>,
+    // middlewares?: Array<Function>,
+}
+
+// interface IModule {
+//     category: string;
+// }
+
 // * Decorators are purely syntax suggar, they are removed on compilation
 
 /**
@@ -107,7 +122,7 @@ export function Param(opts?: IParam): ParameterDecorator {
     }
 }
 
-export function AceClass(opts?: {}): ClassDecorator {
+export function AceClass(opts?: IAceClass): ClassDecorator {
     return function (target) {
 
     }
@@ -118,3 +133,9 @@ export function Schema(opts?: {}): MethodDecorator {
 
     }
 }
+
+// export function AceModule(opts: IModule) {
+//     return function (target) {
+
+//     }
+// }

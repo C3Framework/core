@@ -27,7 +27,7 @@ export async function parseAddonScript(path, acesRuntime = null) {
 }
 
 export function addonToJson(addon, config = {}) {
-    return JSON.stringify(addon, null, !config?.minify ? 4 : undefined).replace(/"(\(inst\) => inst\.[a-zA-Z0-9$_]+)"/g, '$1');
+    return JSON.stringify(addon, null, !config?.minify ? 4 : undefined).replace(/"(\(inst\) => inst\.[a-zA-Z0-9$_]+|\(\) => \(\) => true)"/g, '$1');
 }
 
 async function addonScriptToObject(tsAddonConfig = '') {

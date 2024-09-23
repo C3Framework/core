@@ -21,6 +21,7 @@ import {
 import {
     escapeRegExp,
     filepath,
+    lowerFirst,
     removeFilesRecursively,
     sleep,
     titleCase
@@ -376,7 +377,7 @@ function langFromConfig(config, addon, aces) {
                     root.actions[action.id].params[param.id].items = {};
                     param.items.forEach((item) => {
                         const itemkey = Object.keys(item)[0];
-                        root.actions[key].params[param.id].items[itemkey] = __(item[itemkey]);
+                        root.actions[action.id].params[param.id].items[itemkey] = __(item[itemkey]);
                     });
                 }
             });
@@ -681,6 +682,51 @@ function displayTextStripParams(displayText) {
         .trim();
 }
 
+
+function getTitlesFromACE(config, id, title, params, isExpression = false) {
+
+    let displayText = config.displayText;
+
+    if (!displayText) {
+        // Auto-assign params to display text
+        if (params.length) {
+            displayText = displayTextWithParams(title, params);
+        } else {
+            displayText = title;
+        }
+    }
+
+    const listName = config.listName ??
+        (!isExpression ? displayTextStripParams(displayText) : id);
+
+    return {
+        displayText: displayText.replace("{title}", title),
+        listName: listName.replace("{title}", title),
+    }
+
+}
+
+function searchACE(aceType, regex) {
+    const actionKey = Object.keys(acesRuntime[aceType]).find((k) => k.match(regex));
+
+    let action;
+
+    for (const key in aces) {
+        const aceCategory = aces[key];
+
+        for (let index = 0; index < aceCategory[aceType].length; index++) {
+            const unkownAction = aceCategory[aceType][index];
+
+            if (unkownAction.id === actionKey) {
+                action = unkownAction;
+                break;
+            }
+        }
+    }
+
+    return action;
+}
+
 /**
  * @returns {esbuild.OnLoadResult|null|undefined} 
  */
@@ -712,6 +758,9 @@ function parseScript(ts) {
         }
 
         removeDecorator(aceClass);
+
+        /** @type {import('../../types/decorators.js').IAceClass} */
+        const aceClassConfig = getDecoratorParams(aceClass.expression?.arguments[0]);
 
         /** @type {import('acorn').Node[]} */
         const classFeatures = classDeclaration.body.body;
@@ -772,19 +821,7 @@ function parseScript(ts) {
                 return formatParam(v, id);
             }) ?? [];
 
-            let displayText = config.displayText;
-
-            if (!displayText) {
-                // Auto-assign params to display text
-                if (params.length) {
-                    displayText = displayTextWithParams(title, params);
-                } else {
-                    displayText = title;
-                }
-            }
-
-            const listName = config.listName ??
-                (decoratorName !== "Expression" ? displayTextStripParams(displayText) : id);
+            const { displayText, listName } = getTitlesFromACE(config, id, title, params, decoratorName === "Expression");
 
             if (!aces[category]) {
                 aces[category] = {};
@@ -797,13 +834,73 @@ function parseScript(ts) {
             aces[category][aceType].push({
                 ...config,
                 id,
-                displayText: displayText.replace("{title}", title),
-                listName: listName.replace("{title}", title),
+                displayText,
+                listName,
                 category,
                 params,
                 description: config.description ?? '',
                 ...(returnType ? { returnType } : {}),
             });
+        });
+
+        (aceClassConfig.triggers ?? []).forEach((v) => {
+            if (typeof v === typeof '') {
+                if (!v.startsWith('on')) {
+                    throw new Error("String triggers should start with 'on{MyAction}'");
+                }
+
+                v = { id: v }
+            }
+
+            const baseName = v.id.replace(/^on/, '');
+            const expressionName = lowerFirst(baseName);
+
+            const expression = searchACE(ACE_DECORATORS.Expression, expressionName)
+            const action = searchACE(ACE_DECORATORS.Action, new RegExp("(get|load)" + baseName));
+
+            let category = v.category ?? 'general';
+
+            if (expression) {
+                category = expression.category;
+            } else if (action) {
+                category = action.category;
+            } else if (!v.category) {
+                console.warn(`String trigger "${v.id}" without expression or action detected. Defaulting to "general" category`);
+            }
+
+            const title = titleCase(v.id);
+            const { displayText, listName } = getTitlesFromACE({}, v.id, title, []);
+            let description = '';
+
+            if (action) {
+                description += `Triggers after calling [b]${action.listName}[/b].`;
+            }
+
+            if (expression) {
+                description += ` Use [b]${expression.listName}[/b] expression.`;
+            }
+
+            description = description.trim();
+
+            v = {
+                description,
+                displayText,
+                listName,
+                params: [],
+                isTrigger: true,
+                category,
+                ...v,
+            }
+
+            if (!aces[v.category]) {
+                aces[v.category] = {};
+                for (const type in ACE_TYPES) {
+                    aces[v.category][type] = [];
+                }
+            }
+
+            aces[v.category][ACE_DECORATORS.Condition].push(v);
+            acesRuntime[ACE_DECORATORS.Condition][v.id] = `() => () => true`;
         });
     });
 

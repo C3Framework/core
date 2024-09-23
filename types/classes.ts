@@ -98,6 +98,9 @@ export interface IC3FrameworkInstance {
     _debugProperties(): KeyValue;
 }
 
+export type InstanceClasses = new (...args: any[]) => InstanceBases;
+export type InstanceBases = ISDKInstanceBase_ | ISDKWorldInstanceBase_ | ISDKDOMPluginBase_;
+
 export namespace Behavior {
     export function Base(config: BuiltAddonConfig) {
         return class extends globalThis.ISDKBehaviorBase {
@@ -115,7 +118,7 @@ export namespace Behavior {
         }
     };
 
-    export function Instance<T>(config: BuiltAddonConfig) {
+    export function Instance<T extends InstanceClasses>(config: BuiltAddonConfig) {
         return class instance extends globalThis.ISDKBehaviorInstanceBase<T> implements IC3FrameworkInstance {
             trigger(type: string | Function): void {
                 ClassUtils._trigger(this, config, type);
@@ -211,7 +214,7 @@ export namespace Plugin {
         }
     };
 
-    export function Instance<T extends new (...args: any[]) => ISDKInstanceBase_ | ISDKWorldInstanceBase_ | ISDKDOMPluginBase_>(config: BuiltAddonConfig, type: T) {
+    export function Instance<T extends InstanceClasses>(config: BuiltAddonConfig, type: T) {
         // @ts-ignore
         return class extends type implements IC3FrameworkInstance {
             trigger(type: string | Function): void {
