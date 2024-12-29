@@ -42,7 +42,7 @@ export function line(str, style = null) {
 }
 
 export function header() {
-    return center('Alfred Botler', chalk.black.bgYellowBright.bold);
+    return center('C3FO', chalk.black.bgYellowBright.bold);
 }
 
 export function log(...value) {

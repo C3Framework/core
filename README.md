@@ -1,15 +1,20 @@
-# Construct 3 Framework
 
-This repo contains the **Alfred Botler** CLI and TypeScript utilities needed for the [Construct 3 Framework](https://github.com/MasterPose/c3-framework).
+<p align="center">
+<img src="https://raw.githubusercontent.com/C3Framework/.github/main/assets/banner-core.png" alt="">
+</p>
 
-Since the framework is customizable you can install this package by yourself and setup things manually but using the previously [mentioned template](https://github.com/MasterPose/c3-framework) is highly encourage.
+# Custom AST parser, compiler and TypeScript utils
+
+This repository contains the **C3FO** CLI and TypeScript utilities needed for the [C3 Framework](https://github.com/C3Framework/framework).
+
+Since the framework is fully configurable, you can install this package by yourself and setup things manually but using the previously [mentioned starter base](https://github.com/C3Framework/framework) is highly encouraged.
 
 ## Installation
 
 You can install this package through NPM using this repo URL:
 
 ```
-npm install https://github.com/MasterPose/c3-framework
+npm install https://github.com/C3Framework/core
 ```
 
 ## Structure
@@ -40,7 +45,7 @@ tsconfig.json
 
 All the paths are customizable creating a `c3.config.js` on the root of the project.
 
-You can check the [template](https://github.com/MasterPose/c3-framework) for more information.
+You can check the [starter base](https://github.com/C3Framework/framework) for more information.
 
 ## Usage
 
@@ -49,7 +54,7 @@ You can check the [template](https://github.com/MasterPose/c3-framework) for mor
 You can run the following to see all the available commands:
 
 ```
-npx alfred
+npx c3fo
 ```
 
 You can build your project using:
@@ -61,20 +66,20 @@ npm run build
 You can run a development server using:
 
 ```
-npx alfred build --dev
+npx c3fo build --dev
 ```
 
 You can generate documentation using:
 
 ```
-npx alfred doc
+npx c3fo doc
 ```
 
 ### Defining ACEs
 
 The C3 Framework offers a coupled workflow for defining ACEs. You define the configuration of your ACEs by marking your code using **TypeScript decorators**.
 
-To start you must tell to Alfred on what classes your ACEs will be defined, by using the `@AceClass` decorator. After that, you can start coding your logic in a natural way, marking functions and parameters with their respective decorators, and using the [C3 types](https://www.construct.net/en/make-games/manuals/addon-sdk/reference/pluginproperty#internalH1Link0) (such as `combo`, `cmp`, `eventvar`, etc.) automatically loaded from the framework:
+To start you must tell to C3FO on what classes your ACEs will be defined, by using the `@AceClass` decorator. After that, you can start coding your logic in a natural way, marking functions and parameters with their respective decorators, and using the [C3 types](https://www.construct.net/en/make-games/manuals/addon-sdk/reference/pluginproperty#internalH1Link0) (such as `combo`, `cmp`, `eventvar`, etc.) automatically loaded from the framework:
 
 ```ts
 import { AceClass, Behavior, Condition, Param } from "c3-framework";
