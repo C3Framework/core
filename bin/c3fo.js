@@ -9,7 +9,7 @@ const program = new Command();
 const version = '1.0.0';
 
 program
-    .name('Alfred Botler')
+    .name('C3FO')
     .description('CLI tool for the Construct 3 Framework')
     .version(version)
     .action(() => {

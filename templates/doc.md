@@ -39,13 +39,13 @@ npm install
 To build the addon, run the following command:
 
 ```
-npx alfred build
+npx c3fo build
 ```
 
 To start the dev server, run:
 
 ```
-npx alfred build -D
+npx c3fo build -D
 ```
 
 The build uses the `{{$addonScript}}` file for the configurations and the `{{$runtimeScript}}` file as the entry point to generate everything else.

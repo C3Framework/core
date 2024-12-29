@@ -31,7 +31,7 @@ export default function (commands, version) {
     cli.multiline(
         gradient.morning(
             figlet.textSync(
-                'Alfred Botler',
+                'C3FO',
                 {
                     font: "Doom",
                     width: Math.min(Math.max(windowSize.width - 10, 60), 100),

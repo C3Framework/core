@@ -94,7 +94,7 @@ export default async function () {
         githubUrl: addon.githubUrl,
         addonScript: config.addonScript,
         runtimeScript: config.runtimeScript,
-        frameworkUrl: 'https://github.com/MasterPose/c3-framework',
+        frameworkUrl: 'https://github.com/C3Framework/framework',
     });
 
     md = md.replace("{{$examples}}", getExampleList(config));
