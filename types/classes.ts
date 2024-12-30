@@ -32,46 +32,33 @@ module ClassUtils {
         }];
     }
 
-    // TODO: Wait for SDKv2 to implement loops...
-    // export function _loop(
-    //     inst: C3Instances,
-    //     array: any[],
-    //     callback: (item: any, index: number) => {},
-    //     onEndCallback?: Function) {
-    //     // Get necessary references
-    //     const runtime = inst.runtime;
-    //     const eventSheetManager = runtime.GetEventSheetManager();
-    //     const currentEvent = runtime.GetCurrentEvent();
-    //     const solModifiers = currentEvent.GetSolModifiers();
-    //     const eventStack = runtime.GetEventStack();
+    export function _loop(
+        inst: any,
+        array: any[],
+        callback: (item: any, index: number) => void,
+        onEndCallback?: () => void
+    ) {
+        const runtime = inst.runtime;
+        const sdk = runtime.sdk;
 
-    //     // Get current stack frame and push new one
-    //     const oldFrame = eventStack.GetCurrentStackFrame();
-    //     const newFrame = eventStack.Push(currentEvent);
+        const loopCtx = sdk.createLoopingConditionContext();
 
-    //     for (const [index, item] of array.entries()) {
-    //         callback(item, index);
+        for (const [index, item] of array.entries()) {
+            callback(item, index);
 
-    //         // Push a copy of the current SOL
-    //         eventSheetManager.PushCopySol(solModifiers);
+            loopCtx.retrigger();
 
-    //         // Retrigger the current event, running a single loop iteration
-    //         currentEvent.Retrigger(oldFrame, newFrame);
+            if (loopCtx.isStopped) break;
+        }
 
-    //         // Pop the current SOL
-    //         eventSheetManager.PopSol(solModifiers);
-    //     }
+        if (onEndCallback) {
+            onEndCallback();
+        }
 
-    //     if (onEndCallback) {
-    //         onEndCallback();
-    //     }
+        loopCtx.release();
 
-    //     // Pop the event stack frame
-    //     eventStack.Pop();
-
-    //     // Return false since event already executed
-    //     return false;
-    // }
+        return false;
+    }
 }
 
 type C3Instances = ISDKWorldInstanceBase_ | ISDKInstanceBase_ | ISDKBehaviorInstanceBase_<ISDKWorldInstanceBase_ | ISDKInstanceBase_>;
@@ -122,6 +109,14 @@ export namespace Behavior {
         return class instance extends globalThis.ISDKBehaviorInstanceBase<T> implements IC3FrameworkInstance {
             trigger(type: string | Function): void {
                 ClassUtils._trigger(this, config, type);
+            }
+
+            loop(
+                array: any[],
+                callback: (item: any, index: number) => void,
+                onEndCallback?: () => void
+            ) {
+                ClassUtils._loop(this, array, callback, onEndCallback);
             }
 
             _debugProperties(): KeyValue {
@@ -221,6 +216,14 @@ export namespace Plugin {
                 ClassUtils._trigger(this, config, type);
             }
 
+            loop(
+                array: any[],
+                callback: (item: any, index: number) => void,
+                onEndCallback?: () => void
+            ) {
+                ClassUtils._loop(this, array, callback, onEndCallback);
+            }
+
             _debugProperties(): KeyValue {
                 return {};
             }
@@ -264,6 +267,7 @@ export namespace Plugin {
                             info.AddFileDependency({
                                 filename: `${config.id}_${target.toLowerCase()}.ext.dll`,
                                 type: "wrapper-extension",
+                                // @ts-expect-error
                                 platform: `windows-${target.toLowerCase()}`,
                             });
                         });
