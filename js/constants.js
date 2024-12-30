@@ -24,6 +24,7 @@ export const ALL_DECORATORS = [
 export const TS_Types = {
     'TSStringKeyword': 'string',
     'TSNumberKeyword': 'number',
+    'TSBooleanKeyword': 'boolean',
     'TSAnyAnnotation': 'any',
 };
 
