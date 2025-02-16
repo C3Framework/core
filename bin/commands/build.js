@@ -818,8 +818,13 @@ function parseScript(ts) {
                 if (v.decorators) {
                     v.decorators.forEach(v => removeDecorator(v));
                 }
+                // Ignore variadic arguments
+                if (v.type === 'RestElement') {
+                    return null;
+                }
+
                 return formatParam(v, id);
-            }) ?? [];
+            }).filter((v) => v) ?? [];
 
             const { displayText, listName } = getTitlesFromACE(config, id, title, params, decoratorName === "Expression");
 
