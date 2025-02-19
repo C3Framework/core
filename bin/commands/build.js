@@ -38,7 +38,7 @@ import {
 } from '../../js/constants.js';
 
 import { buildConfig as bc, loadBuildConfig, tsConfig } from '../../js/config.js';
-import { addonJson, buildFile, readAddonConfig, resetParsedConfig } from '../../js/parser.js';
+import { addonJson, buildFile, partialAddonJson, readAddonConfig, resetParsedConfig, setPartialAddonJson } from '../../js/parser.js';
 import { __, loadLanguage, resetLoadedLangs } from '../../js/lang.js';
 import * as cli from '../../js/cli.js';
 import chalk from 'chalk';
@@ -180,7 +180,7 @@ function formatAutoCompleteId(autocompleteId, paramId, methodId) {
         return;
     }
 
-    autocompleteId = `${addonJson.id}:${autocompleteId}`;
+    autocompleteId = `${partialAddonJson.id}:${autocompleteId}`;
 
     if (bc().autoCompleteHash) {
         autocompleteId = md5(autocompleteId);
@@ -987,6 +987,9 @@ async function build() {
 
     // Only use to check initial config, don't use for ACE check
     const partialAddonJson = await readAddonConfig(filepath(config.sourcePath, config.addonScript));
+
+    setPartialAddonJson(partialAddonJson);
+
     if (partialAddonJson.addonType === 'theme') {
         await buildTheme();
         return;
