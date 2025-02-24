@@ -85,7 +85,7 @@ export interface IC3FrameworkInstance {
     _debugProperties(): KeyValue;
 }
 
-export type InstanceClasses = new (...args: any[]) => InstanceBases;
+export type InstanceClasses = IWorldInstance | (new (...args: any[]) => InstanceBases);
 export type InstanceBases = ISDKInstanceBase_ | ISDKWorldInstanceBase_ | ISDKDOMPluginBase_;
 
 export namespace Behavior {
