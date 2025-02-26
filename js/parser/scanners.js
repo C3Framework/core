@@ -67,7 +67,7 @@ export async function getFileListFromConfig(config, addon) {
     const files = {};
 
     const scan = async (dirname) => {
-        readdirSync(dirname).forEach(async (filename) => {
+        const promises = readdirSync(dirname).map(async (filename) => {
             if (filename.startsWith('.')) {
                 return;
             }
@@ -107,6 +107,8 @@ export async function getFileListFromConfig(config, addon) {
 
             files[output] = importType;
         });
+
+        return Promise.all(promises);
     };
 
     await scan(libPath);
