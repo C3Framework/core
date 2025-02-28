@@ -42,7 +42,7 @@ import { addonJson, buildFile, partialAddonJson, readAddonConfig, resetParsedCon
 import { __, loadLanguage, resetLoadedLangs } from '../../js/lang.js';
 import * as cli from '../../js/cli.js';
 import chalk from 'chalk';
-import { join, normalize } from 'path';
+import { dirname, join, normalize } from 'path';
 import { buildTheme } from './theme.js';
 import { md5 } from 'super-fast-md5';
 
@@ -582,6 +582,14 @@ function acesFromConfig(config) {
  * @param {import('../../types/config.js').BuiltAddonConfig} addon
  */
 function distribute(config, addon) {
+    const compiledAddonPath = filepath(config.exportPath, 'addon.json');
+
+    if (!existsSync(compiledAddonPath)) throw new Error("Invalid export. Addon.json is not found!");
+
+    const compiledAddon = JSON.parse(readFileSync(compiledAddonPath, { encoding: 'utf-8' }));
+
+    const fileList = compiledAddon['file-list'] ?? [];
+
     // zip the content of the export folder and name it with the plugin id and version and use .c3addon as extension
     const zipFolder = (suffix = '') => {
         const zip = new AdmZip();
@@ -591,13 +599,20 @@ function distribute(config, addon) {
         }
         zip.addLocalFolder(filepath(config.exportPath, "lang"), "lang");
 
-        // for each remaining file in the root export folder
-        readdirSync(filepath(config.exportPath)).forEach((file) => {
-            // if the file is not the c3runtime or lang folder
-            if (file !== "c3runtime" && file !== "lang") {
-                // add it to the zip
-                zip.addLocalFile(filepath(config.exportPath, file), "");
+        fileList.forEach(file => {
+            if (
+                file.startsWith('c3runtime/') ||
+                file.startsWith('lang/')
+            ) {
+                return;
             }
+
+            // for each remaining file in the root export folder
+
+            const dir = dirname(file);
+            const path = filepath(config.exportPath, file);
+
+            zip.addLocalFile(path, dir);
         });
 
         const distPath = filepath(config.distPath);
