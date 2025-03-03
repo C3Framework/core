@@ -25,7 +25,7 @@ export function pad(str, amount) {
 
 export function center(value, style = null) {
     // const cols = process.stdout.columns || 100;
-    const cols = Math.min(Math.max(windowSize.width, 60), 100);
+    const cols = Math.min(Math.max(windowSize?.width ?? 0, 60), 100);
     const padAmount = Math.floor(cols / 2 - value.length / 2);
 
     return pad(style ? style(value) : value, padAmount);
