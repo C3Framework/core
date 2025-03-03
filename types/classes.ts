@@ -27,10 +27,23 @@ module ClassUtils {
                     if (typeof value === 'function') {
                         onedit = value;
                         value = inst[prop] ?? '';
+
+                        if (typeof value === 'function') {
+                            value = value.call(inst);
+                        }
+                    }
+
+                    function titleCase(str) {
+                        return str.replace(/(?<=\w)([A-Z])/g, ' $1').replace(
+                            /\w\S*/g,
+                            function (txt: string) {
+                                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                            }
+                        );
                     }
 
                     return {
-                        name,
+                        name: titleCase(name),
                         value,
                         onedit
                     };
