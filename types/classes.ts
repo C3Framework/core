@@ -20,13 +20,19 @@ module ClassUtils {
             title: "$" + config.name,
             properties: Object.keys(props)
                 .map((prop) => {
-                    if (!inst.hasOwnProperty(prop)) {
-                        throw new Error(`Passed unset property '${prop}' to debugProperties(). Does the property '${prop}' really exists?`);
+                    let name = prop;
+                    let value = props[prop];
+                    let onedit = () => { };
+
+                    if (typeof value === 'function') {
+                        onedit = value;
+                        value = inst[prop] ?? '';
                     }
+
                     return {
-                        name: prefix + '.' + props[prop].replace(/^\./, ''),
-                        value: inst[prop],
-                        onedit: (v: any) => inst[prop] = v
+                        name,
+                        value,
+                        onedit
                     };
                 })
         }];
