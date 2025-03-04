@@ -782,7 +782,8 @@ function parseScript(ts) {
         const methodAces = classFeatures.filter(v => v.type == 'MethodDefinition' && v.decorators?.length && Object.keys(ACE_DECORATORS).includes(v.decorators[0]?.expression.callee?.name));
 
         methodAces.forEach(v => {
-            const id = v.key.name;
+            const key = v.key.name;
+            let id = v.key.name;
             const title = titleCase(id);
 
             if (v.decorators.length > 1) {
@@ -810,6 +811,10 @@ function parseScript(ts) {
             }
 
             const config = getAceDecoratorConfig(decoratorName, decoratorParams);
+
+            if (config.id) {
+                id = config.id;
+            }
 
             let returnType = config?.returnType;
 
@@ -850,10 +855,11 @@ function parseScript(ts) {
                 }
             }
 
-            acesRuntime[aceType][id] = `(inst) => inst.${id}`;
+            acesRuntime[aceType][id] = `(inst) => inst.${key}`;
             aces[category][aceType].push({
                 ...config,
                 id,
+                scriptName: key,
                 displayText,
                 listName,
                 category,
