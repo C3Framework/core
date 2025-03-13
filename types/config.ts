@@ -1,9 +1,9 @@
-import * as C3Ide2 from "c3ide2-types";
+import { ProjectAddon, Property } from "./project";
 
-export interface AddonConfig extends C3Ide2.ProjectAddon {
+export interface AddonConfig extends ProjectAddon {
     addonType: "behavior" | "plugin";
     editorScripts?: string[];
-    properties: C3Ide2.Property[];
+    properties: Property[];
     aceCategories: {
         [key: string]: string;
     };
@@ -28,7 +28,7 @@ type ThemeColors = {
     pallete?: { [key: string]: string },
 };
 
-export interface ThemeConfig extends C3Ide2.ProjectAddon {
+export interface ThemeConfig extends ProjectAddon {
     addonType: "theme";
     colors: ThemeColors;
     variants?: { [key: string]: ThemeColors };
