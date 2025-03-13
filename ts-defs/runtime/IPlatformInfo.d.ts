@@ -1,14 +1,13 @@
-﻿
-type PlatformInfoExportType = "preview" | "html5" | "scirra-arcade" | "cordova-android" | "cordova-ios" | "nwjs" | "windows-webview2" | "macos-wkwebview" | "xbox-uwp-webview2" | "instant-games" | "playable-ad";
+
+type PlatformInfoExportType = "preview" | "html5" | "scirra-arcade" | "cordova-android" | "cordova-ios" | "nwjs" | "windows-webview2" | "macos-wkwebview" | "xbox-uwp-webview2" | "instant-games" | "playable-ad" | "linux-cef";
 type PlatformInfoOSType = "windows" | "macos" | "linux" | "chrome-os" | "android" | "ios" | "unknown";
 type PlatformInfoBrowserType = "chrome" | "chromium" | "edge" | "opera" | "nwjs" | "firefox" | "safari" | "unknown";
 type PlatformInfoBrowserEngineType = "chromium" | "gecko" | "webkit";
 
-/** Represents the Platform Info object.
- * @see {@link https://www.construct.net/make-games/manuals/construct-3/scripting/scripting-reference/plugin-interfaces/platform-info | IPlatformInfoObjectType documentation } */
-declare class IPlatformInfoObjectType<InstType extends IInstance> extends IObjectType<InstType>
+/** Provides details about the current platform, such as browser, operating system and environment. */
+declare class IPlatformInfo
 {
-	readonly exportType: PlatformInfoExportType;
+    readonly exportType: PlatformInfoExportType;
 	readonly isMobile: boolean;
 	readonly os: PlatformInfoOSType;
 	readonly osVersion: string;

@@ -5,6 +5,9 @@ declare class IAssetManager
 {
     loadImageAsset(iImageInfo: IImageInfo): void;
 
+    /**
+	 * @deprecated All supported platforms now support WebM Opus, so this property is always true and is now redundant.
+	 */
 	readonly isWebMOpusSupported: boolean;
 
     fetchText(url: string): Promise<string>;
@@ -15,6 +18,9 @@ declare class IAssetManager
     getMediaFileUrl(url: string): Promise<string>;
     readonly mediaFolder: string;
     
+    /**
+	 * @deprecated All supported platforms now support WebM Opus, so use the Web Audio API decodeAudioData() method instead.
+	 */
     decodeWebMOpus(audioContext: AudioContext, arrayBuffer: ArrayBuffer): Promise<AudioBuffer>;
 
     loadScripts(...urls: string[]): Promise<void>;

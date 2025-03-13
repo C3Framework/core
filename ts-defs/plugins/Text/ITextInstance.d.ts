@@ -17,6 +17,8 @@ declare class ITextInstance extends IWorldInstance
 	wordWrapMode: TextWordWrapMode;
 	textDirection: TextDirectionMode;
 	readAloud: boolean;
+	setFixedResolutionMode(fixedScale: number): void;
+	setAutoResolutionMode(): void;
 	readonly textWidth: number;
 	readonly textHeight: number;
 	getTextSize(): number[];

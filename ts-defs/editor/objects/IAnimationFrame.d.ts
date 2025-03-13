@@ -7,6 +7,7 @@ declare namespace SDK {
 		GetTexRect(): SDK.Rect;
 
 		LoadWebGLTexture(): Promise<SDK.Gfx.IWebGLTexture>;
+		GetBlob(): Blob;
 		ReplaceBlobAndDecode(blob: Blob): Promise<void>;
 
 		SetDuration(d: number): void;

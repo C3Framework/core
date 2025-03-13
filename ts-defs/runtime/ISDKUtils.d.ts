@@ -11,4 +11,6 @@ declare class ISDKUtils
 
 	isAutoSuspendEnabled: boolean;
 	setSuspended(isSuspended: boolean): void;
+
+	getObjectClassBySid(sid: number): IObjectClass<IInstance>;
 }

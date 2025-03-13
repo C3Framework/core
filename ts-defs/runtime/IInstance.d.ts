@@ -26,6 +26,7 @@ declare class IInstance
 	readonly plugin: IPlugin_;
 
 	readonly uid: number;
+	readonly iid: number;
 	readonly templateName: string;
 
 	timeScale: number;
