@@ -344,7 +344,9 @@ function langFromConfig(config, addon, aces) {
                         root.properties[property.id].items[key] = __(item[key]);
                     });
                 } else if (property.type === "link") {
-                    root.properties[property.id]["link-text"] = __(property.linkText);
+                    root.properties[property.id]["link-text"] = __(property.options.linkText);
+                } else if (property.type === "info") {
+                    root.properties[property.id]["info-text"] = __(property.options.infoText);
                 }
             });
         }

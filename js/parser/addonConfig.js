@@ -4,6 +4,8 @@ import { ACE_TYPES, aceDict } from "../constants.js";
 import { buildConfig } from "../config.js";
 import { getFileListFromConfig, getTypeDefinitions } from "./scanners.js";
 import { readFileSync } from 'fs';
+import { parse as parseJs } from "acorn";
+import escodegen from 'escodegen';
 
 export async function parseAddonScript(path, acesRuntime = null) {
     const content = readFileSync(path, { encoding: 'utf-8' });
@@ -27,7 +29,29 @@ export async function parseAddonScript(path, acesRuntime = null) {
 }
 
 export function addonToJson(addon, config = {}) {
-    return JSON.stringify(addon, null, !config?.minify ? 4 : undefined).replace(/"(\(inst\) => inst\.[a-zA-Z0-9$_]+|\(\) => \(\) => true)"/g, '$1');
+    for (const property of addon.properties) {
+        const shouldBeParsed = {
+            'link': 'linkCallback',
+            'info': 'infoCallback',
+        }[property.type];
+
+        if (shouldBeParsed) {
+            const ast = parseJs(property.options[shouldBeParsed] ?? '() => {}', {
+                ecmaVersion: '2022',
+            });
+            const minified = escodegen.generate(ast, { format: { compact: true, semicolons: false } });
+
+            property.options[shouldBeParsed] = minified;
+        }
+    }
+
+    let json = JSON.stringify(addon, null, !config?.minify ? 4 : undefined);
+    json = json.replace(/"(\(inst\) => inst\.[a-zA-Z0-9$_]+|\(\) => \(\) => true)"/g, '$1')
+        .replace(
+            /"(linkCallback|infoCallback)": "(.*)",?$/gm, '"$1": $2'
+        );
+
+    return json;
 }
 
 async function addonScriptToObject(tsAddonConfig = '') {
