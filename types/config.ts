@@ -1,4 +1,5 @@
-import { ProjectAddon, Property } from "./project";
+import type { ProjectAddon, Property } from "./project";
+import type { AcceptedPlugin } from "postcss/lib/postcss";
 
 export interface AddonConfig extends ProjectAddon {
     addonType: "behavior" | "plugin";
@@ -8,24 +9,25 @@ export interface AddonConfig extends ProjectAddon {
         [key: string]: string;
     };
     fileDependencies?: {
-        [key: string]: "copy-to-output"
-        | "inline-script"
-        | "external-dom-script"
-        | "external-runtime-script"
-        | "external-css"
-    },
+        [key: string]:
+            | "copy-to-output"
+            | "inline-script"
+            | "external-dom-script"
+            | "external-runtime-script"
+            | "external-css";
+    };
     info?: {
         [x: string]: any;
         Set?: {
             CanBeBundled?: boolean;
             IsDeprecated?: boolean;
-        }
-    }
+        };
+    };
 }
 
 type ThemeColors = {
-    background?: string[] | string,
-    pallete?: { [key: string]: string },
+    background?: string[] | string;
+    pallete?: { [key: string]: string };
 };
 
 export interface ThemeConfig extends ProjectAddon {
@@ -35,7 +37,7 @@ export interface ThemeConfig extends ProjectAddon {
 }
 
 export interface BehaviorConfig extends AddonConfig {
-    addonType: "behavior",
+    addonType: "behavior";
     info?: {
         Set?: {
             IsOnlyOneAllowed?: boolean;
@@ -46,11 +48,11 @@ export interface BehaviorConfig extends AddonConfig {
 }
 
 export interface PluginConfig extends AddonConfig {
-    addonType: "plugin",
+    addonType: "plugin";
     type:
-    | "object"
-    | "world"
-    | "dom";
+        | "object"
+        | "world"
+        | "dom";
     info?: {
         defaultImageUrl?: string;
         Set?: {
@@ -80,89 +82,96 @@ export interface PluginConfig extends AddonConfig {
 }
 
 export interface BuiltAddonConfig extends AddonConfig {
-    typeDefs?: string[],
+    typeDefs?: string[];
     Aces?: {
-        actions: any,
-        expressions: any,
-        conditions: any
-    },
+        actions: any;
+        expressions: any;
+        conditions: any;
+    };
     [x: string]: any;
-};
+}
 
 export interface BuildConfig {
-    /** 
-     * Safely minify the code 
+    /**
+     * Safely minify the code
      * @default true
      */
-    minify?: boolean,
+    minify?: boolean;
     /**
      * The host domain of the server
      * @default 'http://localhost'
      */
-    host?: string,
+    host?: string;
     /**
      * The port of the server
      * @default 3000
      */
-    port?: number,
+    port?: number;
     /**
      * The path of the main code, such as the addon config, runtime & editor script.
      * @default 'src/'
      */
-    sourcePath?: string,
+    sourcePath?: string;
     /**
      * The entry point for compilation. It should be the script that is run on runtime
      * @default 'runtime.ts'
      */
-    runtimeScript?: string,
+    runtimeScript?: string;
     /**
      * The name of the script where the addon config will be exported
      * @default 'addon.ts'
      */
-    addonScript?: string,
+    addonScript?: string;
     /**
      * The path of the parsed & compiled assets, it will get deleted and recreated on each build
      * @default 'export/'
      */
-    exportPath?: string,
+    exportPath?: string;
     /**
      * The path where the distributed `.c3addon` will get saved to
      * @default 'dist/'
      */
-    distPath?: string,
+    distPath?: string;
     /**
      * The path that will get scanned for dependencies to ship
      * @default 'src/libs'
      */
-    libPath?: string,
+    libPath?: string;
     /**
      * The path of the language dictionaries that will get loaded on compilation
      * @default 'src/lang'
      */
-    langPath?: string,
+    langPath?: string;
     /**
      * The path that will get scanned for TypeScript definition files `.d.ts` to ship
      * @default 'src/'
      */
-    defPath?: string,
+    defPath?: string;
     /**
      * The path of the `.c3p` examples that will get shipped
      * @default 'examples/'
      */
-    examplesPath?: string,
+    examplesPath?: string;
     /**
      * The language that will get shipped by default and that the translated strings will fallback
      * @default 'en-US'
      */
-    defaultLang?: string,
+    defaultLang?: string;
     /**
      * The name of the main SCSS file for themes
      * @default 'theme.scss'
      */
-    themeStyle?: string,
+    themeStyle?: string;
     /**
      * Convert your autocomplete IDs to MD5 hashes
      * @default false
      */
-    autoCompleteHash?: boolean,
+    autoCompleteHash?: boolean;
+    /**
+     * Enables/configures PostCSS for theme building
+     * @default false
+     */
+    postcss?: {
+        plugins?: AcceptedPlugin[];
+    } | boolean;
 }

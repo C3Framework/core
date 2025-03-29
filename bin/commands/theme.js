@@ -9,10 +9,16 @@ import {
     writeFileSync
 } from 'fs';
 import { isDev, writeAddonConfig, writeLanguages } from './build.js';
-import * as sass from 'sass';
 import convert from 'color-convert';
 import { hexToFilter } from '../../js/vendor/hexToFilter.js';
 import { join } from 'path';
+import postcss from 'postcss';
+import autoprefixer from 'autoprefixer';
+import postCssSass from '@csstools/postcss-sass';
+import postCssSassSyntax from 'postcss-scss';
+import { compileString as sassCompileString } from 'sass';
+import cssnanoPlugin from 'cssnano';
+import { globSync } from 'tinyglobby';
 
 const BODIES_TARGETS = ['body', '#startPage2Wrap', '#exampleBrowserWrap'];
 
@@ -117,16 +123,42 @@ function appendBackground(css) {
     return append + css;
 }
 
-function compile(entryPoint, isString = false) {
+async function compile(entryPoint, to, isString = false) {
     const config = bc();
 
-    const compile = isString ? sass.compileString : sass.compile;
-    const result = compile(entryPoint, {
-        charset: false,
-        style: config.minify ? 'compressed' : 'expanded'
-    });
+    const scss = isString ? entryPoint : readFileSync(entryPoint, 'utf-8');
 
-    return result.css;
+    let result;
+
+    if (config.postcss) {
+        /** @type {Promise<String>} */
+        const postCssPromise = new Promise((resolve, reject) => {
+            postcss([
+                autoprefixer,
+                postCssSass(),
+                ...(config.postcss?.plugins ?? []),
+                ...(config.minify ? [cssnanoPlugin()] : []),
+            ]).process(scss, {
+                from: entryPoint,
+                to,
+                syntax: postCssSassSyntax,
+            }).then((v) => {
+                resolve(v.css)
+            });
+        });
+
+        result = await postCssPromise;
+    } else {
+        result = sassCompileString(scss, {
+            charset: false,
+            loadPaths: globSync(join(config.sourcePath, '**'), {
+                onlyDirectories: true
+            }),
+            style: config.minify ? 'compressed' : 'expanded'
+        }).css;
+    }
+
+    return result;
 }
 
 function writeIcon(primary, replace = null) {
@@ -161,7 +193,7 @@ export async function buildTheme() {
 
     const primary = themeJson.colors?.pallete?.primary.toLowerCase();
 
-    const build = (replace = null) => {
+    const build = async (replace = null) => {
         ensureFoldersExists();
 
         writeLanguages();
@@ -171,14 +203,21 @@ export async function buildTheme() {
 
         const entryPoint = filepath(config.sourcePath, config.themeStyle);
 
-        let css = compile(entryPoint);
+        const to = filepath(config.exportPath, 'theme.css');
+        let css = await compile(entryPoint, to);
         css = appendBackground(css);
         css = appendPallete(css);
-        css = compile(css, true);
+        css = await compile(css, to, true);
+
+        if (!existsSync(config.exportPath)) {
+            mkdirSync(config.exportPath, {
+                recursive: true
+            });
+        }
 
         writeFileSync(
-            filepath(config.exportPath, 'theme.css'),
-            css
+            to,
+            css,
         );
     };
 
@@ -209,7 +248,8 @@ export async function buildTheme() {
         themes.push(main);
 
         const originalConfig = JSON.parse(JSON.stringify(config));
-        themes.forEach((theme) => {
+
+        for (const theme of themes) {
             themeJson = {
                 ...theme,
                 variants
@@ -218,11 +258,13 @@ export async function buildTheme() {
 
             config.exportPath = join(originalConfig.exportPath, theme.id);
 
-            build(themeJson.colors?.pallete?.primary.toLowerCase());
-        });
+            await build(themeJson.colors?.pallete?.primary.toLowerCase());
+        }
+
         config.exportPath = originalConfig.exportPath;
+
         return;
     }
 
-    build();
+    await build(config.exportPath);
 }

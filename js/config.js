@@ -19,6 +19,7 @@ const defaultConfig = {
     examplesPath: 'examples/',
     distPath: 'dist/',
     autoCompleteHash: false,
+    postcss: false,
 };
 
 /** @type {import('../types/config.js').BuildConfig} */

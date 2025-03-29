@@ -1144,7 +1144,7 @@ export default async function (devBuild = false, serverOpts = {}, {
             acesRuntime = aceDict();
             resetParsedConfig();
 
-            build();
+            await build();
         }, serverOpts);
         return;
     }
