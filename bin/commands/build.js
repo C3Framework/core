@@ -586,7 +586,7 @@ function acesFromConfig(config) {
 function distribute(config, addon) {
     const compiledAddonPath = filepath(config.exportPath, 'addon.json');
 
-    if (!existsSync(compiledAddonPath)) throw new Error("Invalid export. Addon.json is not found!");
+    if (!existsSync(compiledAddonPath)) throw new Error(`Invalid export. '${compiledAddonPath}' was not found!`);
 
     const compiledAddon = JSON.parse(readFileSync(compiledAddonPath, { encoding: 'utf-8' }));
 

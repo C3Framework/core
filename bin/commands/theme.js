@@ -221,6 +221,8 @@ export async function buildTheme() {
         );
     };
 
+    writeFileSync(filepath(config.exportPath, 'addon.json'), JSON.stringify(addonJson, null, 2));
+
     const variants = themeJson.variants;
     if (variants && !isDev) {
         const themes = Object.keys(variants).map((variant) => {
