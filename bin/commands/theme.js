@@ -221,7 +221,7 @@ export async function buildTheme() {
         );
     };
 
-    writeFileSync(filepath(config.exportPath, 'addon.json'), JSON.stringify(addonJson, null, 2));
+    writeAddonConfig();
 
     const variants = themeJson.variants;
     if (variants && !isDev) {
