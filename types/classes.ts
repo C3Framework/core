@@ -3,51 +3,62 @@ import { AddonConfig, BuiltAddonConfig } from "./config";
 
 module ClassUtils {
     /**  @internal */
-    export function _trigger(inst: any, config: AddonConfig, type: Function | string) {
+    export function _trigger(
+        inst: any,
+        config: AddonConfig,
+        type: Function | string,
+    ) {
         if (type instanceof Function) {
             type = type.name;
         }
 
         inst.dispatchEvent(new globalThis.C3.Event(type));
-        inst._trigger(globalThis.C3[ADDON_NAMESPACE[config.addonType]][config.id].Cnds[type]);
+        inst._trigger(
+            globalThis.C3[ADDON_NAMESPACE[config.addonType]][config.id]
+                .Cnds[type],
+        );
     }
 
     /** @internal */
     export function _getDebuggerProperties(inst: any, config: AddonConfig) {
-        const prefix = ADDON_NAMESPACE[config.addonType] + "." + config.id.toLocaleLowerCase();
-        const props = inst.debugProperties();
+        const getDebugProps = inst._debugProperties ?? inst.debugProperties;
+
+        if (!getDebugProps) return [];
+
+        function titleCase(str: string) {
+            return str.replace(/(?<=\w)([A-Z])/g, " $1").replace(
+                /\w\S*/g,
+                function (txt: string) {
+                    return txt.charAt(0).toUpperCase() +
+                        txt.substr(1).toLowerCase();
+                },
+            );
+        }
+
+        const props = getDebugProps();
         return [{
             title: "$" + config.name,
             properties: Object.keys(props)
                 .map((prop) => {
                     let name = prop;
                     let value = props[prop];
-                    let onedit = () => { };
+                    let onedit = () => {};
 
-                    if (typeof value === 'function') {
+                    if (typeof value === "function") {
                         onedit = value;
-                        value = inst[prop] ?? '';
+                        value = inst[prop] ?? "";
 
-                        if (typeof value === 'function') {
+                        if (typeof value === "function") {
                             value = value.call(inst);
                         }
-                    }
-
-                    function titleCase(str) {
-                        return str.replace(/(?<=\w)([A-Z])/g, ' $1').replace(
-                            /\w\S*/g,
-                            function (txt: string) {
-                                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-                            }
-                        );
                     }
 
                     return {
                         name: titleCase(name),
                         value,
-                        onedit
+                        onedit,
                     };
-                })
+                }),
         }];
     }
 
@@ -55,7 +66,7 @@ module ClassUtils {
         inst: any,
         array: any[],
         callback: (item: any, index: number) => void,
-        onEndCallback?: () => void
+        onEndCallback?: () => void,
     ) {
         const runtime = inst.runtime;
         const sdk = runtime.sdk;
@@ -80,32 +91,37 @@ module ClassUtils {
     }
 }
 
-type C3Instances = ISDKWorldInstanceBase_ | ISDKInstanceBase_ | ISDKBehaviorInstanceBase_<ISDKWorldInstanceBase_ | ISDKInstanceBase_>;
-
+type C3Instances =
+    | ISDKWorldInstanceBase_
+    | ISDKInstanceBase_
+    | ISDKBehaviorInstanceBase_<ISDKWorldInstanceBase_ | ISDKInstanceBase_>;
 
 export interface IC3FrameworkInstance {
-    /** 
+    /**
      * Triggers and dispatches event for scripting API.
-     * 
+     *
      * Shortcut to execute `_trigger()` and  `dispatchEvent()`
      */
     trigger(type: Function | string): void;
 
     /**
      * Define properties to be read by `_getDebuggerProperties()`.
-     * 
+     *
      * The key should be the name of the property and the value the display text on the debugger
-     * @example 
-     * { 
-     *   _speed: "properties.speed.name", 
-     *   _isEnabled: "properties.enabled.name" 
+     * @example
+     * {
+     *   _speed: "properties.speed.name",
+     *   _isEnabled: "properties.enabled.name"
      * }
      */
     _debugProperties(): KeyValue;
 }
 
-export type InstanceClasses = (new (...args: any[]) => InstanceBases);
-export type InstanceBases = ISDKInstanceBase_ | ISDKWorldInstanceBase_ | ISDKDOMPluginBase_;
+export type InstanceClasses = new (...args: any[]) => InstanceBases;
+export type InstanceBases =
+    | ISDKInstanceBase_
+    | ISDKWorldInstanceBase_
+    | ISDKDOMPluginBase_;
 
 export namespace Behavior {
     export function Base(config: BuiltAddonConfig) {
@@ -113,7 +129,7 @@ export namespace Behavior {
             constructor() {
                 super();
             }
-        }
+        };
     }
 
     export function Type(config: BuiltAddonConfig) {
@@ -121,11 +137,14 @@ export namespace Behavior {
             constructor() {
                 super();
             }
-        }
-    };
+        };
+    }
 
-    export function Instance<T extends InstanceClasses>(config: BuiltAddonConfig) {
-        return class instance extends globalThis.ISDKBehaviorInstanceBase<T> implements IC3FrameworkInstance {
+    export function Instance<T extends InstanceClasses>(
+        config: BuiltAddonConfig,
+    ) {
+        return class instance extends globalThis.ISDKBehaviorInstanceBase<T>
+            implements IC3FrameworkInstance {
             trigger(type: string | Function): void {
                 ClassUtils._trigger(this, config, type);
             }
@@ -133,7 +152,7 @@ export namespace Behavior {
             loop(
                 array: any[],
                 callback: (item: any, index: number) => void,
-                onEndCallback?: () => void
+                onEndCallback?: () => void,
             ) {
                 ClassUtils._loop(this, array, callback, onEndCallback);
             }
@@ -146,7 +165,7 @@ export namespace Behavior {
                 return ClassUtils._getDebuggerProperties(this, config);
             }
         };
-    };
+    }
 
     export namespace Editor {
         export function Base(config: BuiltAddonConfig) {
@@ -178,11 +197,11 @@ export namespace Behavior {
                     super(sdkType, inst);
                 }
 
-                Release() { }
+                Release() {}
 
-                OnCreate() { }
+                OnCreate() {}
 
-                OnPropertyChanged(id: any, value: any) { }
+                OnPropertyChanged(id: any, value: any) {}
 
                 LoadC2Property(name: any, valueString: any) {
                     return false; // not handled
@@ -217,18 +236,22 @@ export namespace Plugin {
             _release() {
                 super._release();
             }
-        }
+        };
     }
 
     export function Type(config: BuiltAddonConfig) {
-        return class extends globalThis.ISDKObjectTypeBase<IWorldInstance | IInstance> {
+        return class
+            extends globalThis.ISDKObjectTypeBase<IWorldInstance | IInstance> {
             constructor() {
                 super();
             }
-        }
-    };
+        };
+    }
 
-    export function Instance<T extends InstanceClasses>(config: BuiltAddonConfig, type: T) {
+    export function Instance<T extends InstanceClasses>(
+        config: BuiltAddonConfig,
+        type: T,
+    ) {
         // @ts-ignore
         return class extends type implements IC3FrameworkInstance {
             trigger(type: string | Function): void {
@@ -238,7 +261,7 @@ export namespace Plugin {
             loop(
                 array: any[],
                 callback: (item: any, index: number) => void,
-                onEndCallback?: () => void
+                onEndCallback?: () => void,
             ) {
                 ClassUtils._loop(this, array, callback, onEndCallback);
             }
@@ -251,7 +274,7 @@ export namespace Plugin {
                 return ClassUtils._getDebuggerProperties(this, config);
             }
         };
-    };
+    }
 
     export namespace Editor {
         export function Base(config: BuiltAddonConfig) {
@@ -264,27 +287,30 @@ export namespace Plugin {
                     const info = this._info;
 
                     info.SetPluginType(
-                        config.type === "object" ? "object" : "world"
+                        config.type === "object" ? "object" : "world",
                     );
 
                     if (config.info && config.info.defaultImageUrl) {
                         info.SetDefaultImageURL(
-                            `c3runtime/${config.info.defaultImageUrl}`
+                            `c3runtime/${config.info.defaultImageUrl}`,
                         );
                     }
 
                     if (config.domSideScripts) {
                         info.SetDOMSideScripts(
-                            config.domSideScripts.map((s) => `c3runtime/${s}`)
+                            config.domSideScripts.map((s) => `c3runtime/${s}`),
                         );
                     }
 
                     // TODO: Scan ext.dll and import them automatically
-                    if (config.extensionScript && config.extensionScript.enabled) {
+                    if (
+                        config.extensionScript && config.extensionScript.enabled
+                    ) {
                         const targets = config.extensionScript.targets || [];
                         targets.forEach((target: string) => {
                             info.AddFileDependency({
-                                filename: `${config.id}_${target.toLowerCase()}.ext.dll`,
+                                filename:
+                                    `${config.id}_${target.toLowerCase()}.ext.dll`,
                                 type: "wrapper-extension",
                                 // @ts-expect-error
                                 platform: `windows-${target.toLowerCase()}`,
@@ -293,16 +319,17 @@ export namespace Plugin {
                     }
 
                     if (config.info && config.info.AddCommonACEs) {
-                        Object.keys(config.info.AddCommonACEs).forEach((key) => {
-                            if (config.info!.AddCommonACEs[key]) {
-                                info[`AddCommon${key}ACEs`]();
-                            }
-                        });
+                        Object.keys(config.info.AddCommonACEs).forEach(
+                            (key) => {
+                                if (config.info!.AddCommonACEs[key]) {
+                                    info[`AddCommon${key}ACEs`]();
+                                }
+                            },
+                        );
                     }
 
                     // Set common stuff
                     registerEditorClass(this, SDK, config);
-
                 }
             };
         }
@@ -331,11 +358,11 @@ export namespace Plugin {
                     super(sdkType, inst);
                 }
 
-                Release() { }
+                Release() {}
 
-                OnCreate() { }
+                OnCreate() {}
 
-                OnPropertyChanged(id: any, value: any) { }
+                OnPropertyChanged(id: any, value: any) {}
 
                 LoadC2Property(name: any, valueString: any) {
                     return false; // not handled
