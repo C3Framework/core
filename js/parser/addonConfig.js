@@ -22,7 +22,7 @@ export async function parseAddonScript(path, acesRuntime = null) {
     try {
         addon = await addonScriptToObject(jsConfig);
     } catch (error) {
-        throw Error("Error on addon config. Please be sure to not execute external libraries from there." + "\n" + error);
+        throw new Error("Error on addon config. Please be sure to not execute external libraries from there." + "\n" + error);
     }
 
     return addon;
@@ -68,7 +68,7 @@ async function addonScriptToObject(tsAddonConfig = '') {
     try {
         config = getConfig().default;
     } catch (error) {
-        throw Error("Error on reading Addon Config. Please be sure to not execute external libraries from there." + "\n" + error);
+        throw new Error("Error on reading Addon Config. Please be sure to not execute external libraries from there." + "\n" + error);
     }
 
     // * Remove ACEs

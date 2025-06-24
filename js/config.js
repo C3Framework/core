@@ -27,7 +27,7 @@ let _buildConfig;
 
 /**  @returns {import('../types/config.js').BuildConfig} */
 export function buildConfig() {
-    if (!_buildConfig) throw Error('Trying to access build config before initialization');
+    if (!_buildConfig) throw new Error('Trying to access build config before initialization');
 
     return _buildConfig;
 }

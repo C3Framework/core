@@ -111,7 +111,7 @@ function astToValue(ast) {
     try {
         value = eval(escodegen.generate(ast));
     } catch (error) {
-        throw Error(`Couldn\'t obtain value from AST`)
+        throw new Error(`Couldn\'t obtain value from AST`)
     }
 
     return value;
@@ -126,7 +126,7 @@ function getDecoratorParams(decoratorParams = {}) {
                 try {
                     obj[v.key.name] = astToValue(v.value);
                 } catch (error) {
-                    throw Error(`ACE parameter '${v.key.name}' is not compilable. Use static values.`)
+                    throw new Error(`ACE parameter '${v.key.name}' is not compilable. Use static values.`)
                 }
             }
             return obj;
@@ -134,29 +134,31 @@ function getDecoratorParams(decoratorParams = {}) {
 }
 
 function getAceDecoratorConfig(decorator, decoratorParams = []) {
+    const [nameOrObjectParam, objectParam] = decoratorParams;
+
     switch (decorator) {
         case 'Action':
         case 'Condition':
             let params = {};
 
-            if (decoratorParams[0].type === 'ObjectExpression') {
-                params = getDecoratorParams(decoratorParams[0])
+            if (nameOrObjectParam?.type === 'ObjectExpression') {
+                params = getDecoratorParams(nameOrObjectParam)
             } else {
-                params = getDecoratorParams(decoratorParams[1])
+                params = getDecoratorParams(objectParam)
 
                 if (params.displayText === undefined) {
                     try {
-                        params.displayText = astToValue(decoratorParams[0]) ?? undefined;
-                    } finally { }
+                        params.displayText = astToValue(nameOrObjectParam) ?? undefined;
+                    } catch (error) { }
                 }
             }
 
 
             return params;
         case 'Expression':
-            return getDecoratorParams(decoratorParams[0]);
+            return getDecoratorParams(nameOrObjectParam);
         case 'Trigger':
-            const config = getDecoratorParams(decoratorParams[0]);
+            const config = getDecoratorParams(nameOrObjectParam);
             config.displayText = config.displayText ?? "{my} {title}";
 
             if (config.isFakeTrigger) {
@@ -167,7 +169,7 @@ function getAceDecoratorConfig(decorator, decoratorParams = []) {
             // config.isFakeTrigger = !config.isTrigger;
             return config;
         default:
-            throw Error("Trying to get configuration from an Unexpected Ace decorator");
+            throw new Error("Trying to get configuration from an Unexpected Ace decorator");
     }
 }
 
@@ -200,13 +202,13 @@ function formatParam(param = {}, methodId = null) {
         type = getParserType(param.left.typeAnnotation);
         initialValue = param.right.value;
     } else {
-        throw Error(`Unhandled ACE parameter assignation. Try using the '@${PARAM_DECORATOR}' decorator or typings.`);
+        throw new Error(`Unhandled ACE parameter assignation. Try using the '@${PARAM_DECORATOR}' decorator or typings.`);
     }
 
     let config = (param.decorators ?? [])?.filter((v) => v.expression.callee?.name === PARAM_DECORATOR);
 
     if (config.length > 1) {
-        throw Error(`Decorator '@${PARAM_DECORATOR}' must be declared once per parameter`);
+        throw new Error(`Decorator '@${PARAM_DECORATOR}' must be declared once per parameter`);
     }
 
     config = getDecoratorParams(config[0]?.expression?.arguments[0]);
@@ -224,8 +226,8 @@ function formatParam(param = {}, methodId = null) {
 }
 
 /**
- * @param {import('../../types/config.js').BuildConfig} config 
- * @param {import('../../types/config.js').BuiltAddonConfig} addon 
+ * @param {import('../../types/config.js').BuildConfig} config
+ * @param {import('../../types/config.js').BuiltAddonConfig} addon
  */
 async function addonFromConfig(config, addon) {
     return {
@@ -580,7 +582,7 @@ function acesFromConfig(config) {
 }
 
 /**
- * @param {import('../../types/config.js').BuildConfig} config 
+ * @param {import('../../types/config.js').BuildConfig} config
  * @param {import('../../types/config.js').BuiltAddonConfig} addon
  */
 function distribute(config, addon) {
@@ -679,7 +681,7 @@ function hasDecorators(ts = '') {
 }
 
 /**
- * @param {import('acorn').Program} tree 
+ * @param {import('acorn').Program} tree
  */
 function searchTopClasses(tree) {
     return tree.body.filter(node => node.type === 'ClassDeclaration');
@@ -745,7 +747,7 @@ function searchACE(aceType, regex) {
 }
 
 /**
- * @returns {esbuild.OnLoadResult|null|undefined} 
+ * @returns {esbuild.OnLoadResult|null|undefined}
  */
 function parseScript(ts) {
     let offset = 0;
@@ -789,7 +791,7 @@ function parseScript(ts) {
             const title = titleCase(id);
 
             if (v.decorators.length > 1) {
-                throw Error(`Method '${id}' can only be one ACE`);
+                throw new Error(`Method '${id}' can only be one ACE`);
             }
 
             const decorator = v.decorators[0];
@@ -799,7 +801,7 @@ function parseScript(ts) {
             // ACE_TYPES[decorator.expression.callee.name];
 
             if (!aceType) {
-                throw Error(`Unkown ACE operation on '${id}'`);
+                throw new Error(`Unkown ACE operation on '${id}'`);
             }
 
             removeDecorator(decorator);
@@ -808,7 +810,7 @@ function parseScript(ts) {
 
             if (decoratorParams?.length > 1) {
                 if (decoratorParams.length > 2 || decoratorParams[1].type !== 'ObjectExpression') {
-                    throw Error(`You must pass an object as option argument on '${id}' ACE`);
+                    throw new Error(`You must pass an object as option argument on '${id}' ACE`);
                 }
             }
 
@@ -941,8 +943,8 @@ function parseScript(ts) {
 }
 
 /**
- * @param {BuildConfig} config  
- * @returns {import('esbuild').Plugin} 
+ * @param {BuildConfig} config
+ * @returns {import('esbuild').Plugin}
  */
 function parseAces(config) {
     const parseFile = new RegExp(escapeRegExp(config.sourcePath) + ".*\\.ts$");
@@ -963,14 +965,7 @@ function parseAces(config) {
                     return;
                 }
 
-                let parsed;
-
-                try {
-                    parsed = parseScript(ts)
-                } catch (error) {
-                    const relativePath = join(config.sourcePath, normalized.replace(filepath(config.sourcePath), ''));
-                    throw Error('Script ' + chalk.bold(relativePath) + ' ' + error)
-                }
+                const parsed = parseScript(ts)
 
                 return parsed;
             });
@@ -1024,7 +1019,7 @@ async function build() {
     const main = await buildFile(filepath(config.sourcePath, config.runtimeScript), config, [parseAces(config)]);
 
     if (!addonJson) {
-        throw Error(`Addon wasn't parsed properly. This may be due of not being able to find '${config.addonScript}'`);
+        throw new Error(`Addon wasn't parsed properly. This may be due of not being able to find '${config.addonScript}'`);
     }
 
     // addonJson is now available to use
@@ -1038,7 +1033,7 @@ async function build() {
     await Promise.all(
         addonJson.editorScripts.map(async (v) => {
             if (!v.match(/\.(js|ts)$/)) {
-                throw Error(`Editor script path '${v}' is neither a JavaScript nor TypeScript path`);
+                throw new Error(`Editor script path '${v}' is neither a JavaScript nor TypeScript path`);
             }
 
             const tsPath = v.trim().replace(/\.js$/, '.ts');

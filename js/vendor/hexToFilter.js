@@ -296,7 +296,7 @@ export function hexToFilter(hex) {
     const rgbColor = hexToRgb(hex);
 
     if (rgbColor.length !== 3) {
-        throw Error("Invalid HEX color format");
+        throw new Error("Invalid HEX color format");
     }
 
     const color = new Color(rgbColor[0], rgbColor[1], rgbColor[2]);
