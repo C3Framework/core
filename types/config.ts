@@ -10,11 +10,11 @@ export interface AddonConfig extends ProjectAddon {
     };
     fileDependencies?: {
         [key: string]:
-            | "copy-to-output"
-            | "inline-script"
-            | "external-dom-script"
-            | "external-runtime-script"
-            | "external-css";
+        | "copy-to-output"
+        | "inline-script"
+        | "external-dom-script"
+        | "external-runtime-script"
+        | "external-css";
     };
     info?: {
         [x: string]: any;
@@ -50,9 +50,9 @@ export interface BehaviorConfig extends AddonConfig {
 export interface PluginConfig extends AddonConfig {
     addonType: "plugin";
     type:
-        | "object"
-        | "world"
-        | "dom";
+    | "object"
+    | "world"
+    | "dom";
     info?: {
         defaultImageUrl?: string;
         Set?: {
@@ -167,6 +167,11 @@ export interface BuildConfig {
      * @default false
      */
     autoCompleteHash?: boolean;
+    /**
+     * Lets you customize the name of your exported `.c3addon`
+     * @default '$ID-$SUFFIX-$VERSION'
+     */
+    exportName?: string;
     /**
      * Enables/configures PostCSS for theme building
      * @default false

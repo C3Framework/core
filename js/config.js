@@ -19,6 +19,7 @@ const defaultConfig = {
     examplesPath: 'examples/',
     distPath: 'dist/',
     autoCompleteHash: false,
+    exportName: '$ID-$SUFFIX-$VERSION',
     postcss: false,
 };
 

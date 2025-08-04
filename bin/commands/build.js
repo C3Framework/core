@@ -626,13 +626,13 @@ function distribute(config, addon) {
             mkdirSync(distPath);
         }
 
-        let c3AddonName;
-
-        if (suffix) {
-            c3AddonName = `${addon.id}-${suffix}-${addon.version}`;
-        } else {
-            c3AddonName = `${addon.id}-${addon.version}`;
-        }
+        const c3AddonName = config.exportName
+            .replace('$ID', addon.id)
+            .replace('$SUFFIX', suffix)
+            .replace('$VERSION', addon.version)
+            .split('-')
+            .filter((v) => v)
+            .join('-');
 
         zip.writeZip(filepath(config.distPath, `${c3AddonName}.c3addon`));
     };
