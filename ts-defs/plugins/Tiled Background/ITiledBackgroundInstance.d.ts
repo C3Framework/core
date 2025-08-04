@@ -6,30 +6,30 @@ declare class ITiledBackgroundInstance extends IWorldInstance
 	imageOffsetX: number;
 	imageOffsetY: number;
 	setImageOffset(x: number, y: number): void;
-	getImageOffset(): number[];
+	getImageOffset(): Vec2Arr;
 
 	imageScaleX: number;
 	imageScaleY: number;
 	setImageScale(x: number, y: number): void;
-	getImageScale(): number[];
+	getImageScale(): Vec2Arr;
 
 	imageAngle: number;
 	imageAngleDegrees: number;
 
 	readonly imageWidth: number;
 	readonly imageHeight: number;
-	getImageSize(): number[];
+	getImageSize(): Vec2Arr;
 
 	enableTileRandomization: number;
 	tileXRandom: number;
 	tileYRandom: number;
 	setTileRandom(x: number, y: number): void;
-	getTileRandom(): number[];
+	getTileRandom(): Vec2Arr;
 	tileAngleRandom: number;
 	tileBlendMarginX: number;
 	tileBlendMarginY: number;
 	setTileBlendMargin(x: number, y: number): void;
-	getTileBlendMargin(): number[];
+	getTileBlendMargin(): Vec2Arr;
 
 	replaceImage(blob: Blob): Promise<void>;
 }

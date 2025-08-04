@@ -1,7 +1,7 @@
 
-type PluginPropertyInitialValueType = number | number[] | string | boolean;
+type PluginPropertyInitialValueType = number | Vec3Arr | string | boolean;
 
-type PluginPropertyType = "integer" | "float" | "percent" | "text" | "longtext" | "check" | "font" | "combo" | "color" | "object" | "group" | "link" | "info";
+type PluginPropertyType = "integer" | "float" | "percent" | "text" | "longtext" | "check" | "font" | "combo" | "color" | "object" | "group" | "link" | "info" | "projectfile";
 
 type PluginPropertyCallbackType = "for-each-instance" | "once-for-type";
 
@@ -15,7 +15,8 @@ interface PluginPropertyOptions {
 	linkCallback?: (p: SDK.IWorldInstanceBase | SDK.ITypeBase) => void,
 	infoCallback?: (inst: SDK.IInstanceBase) => string,
 	callbackType?: PluginPropertyCallbackType,
-	interpolatable?: boolean
+	interpolatable?: boolean,
+	filter?: string
 }
 
 declare namespace SDK {

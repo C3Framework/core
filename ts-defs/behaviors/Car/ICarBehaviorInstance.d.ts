@@ -13,7 +13,7 @@ declare class ICarBehaviorInstance<InstType> extends IBehaviorInstance<InstType>
 	deceleration: number;
 	readonly vectorX: number;
 	readonly vectorY: number;
-	getVector(): number[];
+	getVector(): Vec2Arr;
 	readonly angleOfMotion: number;
 	steerSpeed: number;
 	driftRecover: number;

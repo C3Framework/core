@@ -38,18 +38,18 @@ declare class IPhysicsBehaviorInstance<InstType> extends IBehaviorInstance<InstT
 	setVelocity(vx: number, vy: number): void;
 	getVelocityX(): number;
 	getVelocityY(): number;
-	getVelocity(): number[];
+	getVelocity(): Vec2Arr;
 
 	teleport(x: number, y: number): void;
 
 	getCenterOfMassX(): number;
 	getCenterOfMassY(): number;
-	getCenterOfMass(): number[];
+	getCenterOfMass(): Vec2Arr;
 
 	getContactCount(): number;
 	getContactX(): number;
 	getContactY(): number;
-	getContact(): number[];
+	getContact(): Vec2Arr;
 
 	createDistanceJoint(imgPt: ImagePointParameter, otherInst: IWorldInstance, otherImgPt: ImagePointParameter, damping: number, freq: number): void;
 	createRevoluteJoint(imgPt: ImagePointParameter, otherInst: IWorldInstance): void;

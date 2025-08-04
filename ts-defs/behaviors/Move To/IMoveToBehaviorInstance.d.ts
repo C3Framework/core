@@ -14,7 +14,7 @@ declare class IMoveToBehaviorInstance<InstType> extends IBehaviorInstance<InstTy
 	moveToPosition(x: number, y: number, isDirect?: boolean): void;
 	getTargetX(): number;
 	getTargetY(): number;
-	getTargetPosition(): number[];
+	getTargetPosition(): Vec2Arr;
 	getWaypointCount(): number;
 	getWaypointX(index: number): number;
 	getWaypointY(index: number): number;

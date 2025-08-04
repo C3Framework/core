@@ -5,7 +5,7 @@ declare class IImageInfo
 {
 	readonly width: number;
     readonly height: number;
-    getSize(): number[];
+    getSize(): Vec2Arr;
 
     // For addon SDK
     getTexture(renderer: IRenderer): ITexture | null;

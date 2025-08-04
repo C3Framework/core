@@ -1,5 +1,5 @@
 
-type EffectParameter = number | number[];
+type EffectParameter = number | Vec3Arr;
 
 /** Represents the parameters for a single effect on a IWorldInstance, ILayer or ILayout.
  * @see {@link https://www.construct.net/make-games/manuals/construct-3/scripting/scripting-reference/object-interfaces/ieffectinstance | IEffectInstance documentation } */

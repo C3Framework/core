@@ -18,6 +18,8 @@ declare class IPlatformInfo
 	readonly renderer: string;
 	readonly rendererDetail: string;
 
+	readonly canvasClientX: number;
+	readonly canvasClientY: number;
 	readonly canvasCssWidth: number;
 	readonly canvasCssHeight: number;
 	readonly canvasDeviceWidth: number;

@@ -1,16 +1,16 @@
 ﻿
 type SpriteAnimationFromMode = "current-frame" | "beginning";
 
-interface SpriteFrameChangeEvent<InstType> extends InstanceEvent<InstType> {
+interface SpriteFrameChangeEvent<InstType = ISpriteInstance> extends InstanceEvent<InstType> {
 	animationName: string;
 	animationFrame: number;
 }
 
-interface SpriteAnimationEndEvent<InstType> extends InstanceEvent<InstType> {
+interface SpriteAnimationEndEvent<InstType = ISpriteInstance> extends InstanceEvent<InstType> {
 	animationName: string;
 }
 
-interface SpriteInstanceEventMap<InstType> extends InstanceEventMap<InstType> {
+interface SpriteInstanceEventMap<InstType = ISpriteInstance> extends WorldInstanceEventMap<InstType> {
 	"framechange": SpriteFrameChangeEvent<InstType>;
 	"animationend": SpriteAnimationEndEvent<InstType>;
 }
@@ -26,12 +26,12 @@ declare class ISpriteInstance extends IWorldInstance
 	getImagePointX(nameOrIndex: ImagePointParameter): number;
 	getImagePointY(nameOrIndex: ImagePointParameter): number;
 	getImagePointZ(nameOrIndex: ImagePointParameter): number;
-	getImagePoint(nameOrIndex: ImagePointParameter): number[];
+	getImagePoint(nameOrIndex: ImagePointParameter): Vec3Arr;
 
 	getPolyPointCount(): number;
 	getPolyPointX(index: number): number;
 	getPolyPointY(index: number): number;
-	getPolyPoint(index: number): number[];
+	getPolyPoint(index: number): Vec2Arr;
 
 	stopAnimation(): void;
 	startAnimation(from?: SpriteAnimationFromMode): void;
@@ -46,7 +46,7 @@ declare class ISpriteInstance extends IWorldInstance
 
 	readonly imageWidth: number;
 	readonly imageHeight: number;
-	getImageSize(): number[];
+	getImageSize(): Vec2Arr;
 
 	replaceCurrentAnimationFrame(blob: Blob): Promise<void>;
 	setSolidCollisionFilter(isInclusive: boolean, tags: string): void;

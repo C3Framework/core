@@ -7,17 +7,17 @@ declare class IAnimationFrame extends IImageInfo
 
     readonly originX: number;
     readonly originY: number;
-    getOrigin(): number[];
+    getOrigin(): Vec2Arr;
 
     getImagePointCount(): number;
     getImagePointX(nameOrIndex: ImagePointParameter): number;
     getImagePointY(nameOrIndex: ImagePointParameter): number;
-    getImagePoint(nameOrIndex: ImagePointParameter): number[];
+    getImagePoint(nameOrIndex: ImagePointParameter): Vec2Arr;
 
     getPolyPointCount(): number;
     getPolyPointX(index: number): number;
     getPolyPointY(index: number): number;
-    getPolyPoint(index: number): number[];
+    getPolyPoint(index: number): Vec2Arr;
 
     readonly tag: string;
 }

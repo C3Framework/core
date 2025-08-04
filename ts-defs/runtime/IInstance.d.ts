@@ -3,11 +3,11 @@ interface InstanceEvent<InstType = IInstance> extends ConstructEvent {
 	instance: InstType;
 }
 
-interface InstanceDestroyEvent<InstType> extends InstanceEvent<InstType> {
+interface InstanceDestroyEvent<InstType = IInstance> extends InstanceEvent<InstType> {
 	isEndingLayout: boolean;
 }
 
-interface InstanceEventMap<InstType> {
+interface InstanceEventMap<InstType = IInstance> {
 	"destroy": InstanceDestroyEvent<InstType>;
 }
 
@@ -40,7 +40,7 @@ declare class IInstance
 	destroy(): void;
 
 	getOtherContainerInstances(): IInstance[];
-	otherContainerInstances(): Iterable<IInstance>;
+	otherContainerInstances(): Generator<IInstance>;
 
 	signal(tag: string): void;
 	waitForSignal(tag: string): Promise<void>;

@@ -1,4 +1,8 @@
 
+interface WorldInstanceEventMap<InstType = IWorldInstance> extends InstanceEventMap<InstType> {
+	"hierarchyready": InstanceEvent<InstType>;
+}
+
 // Hierarchy options returned by getHierarchyOpts()
 interface SceneGraphHierarchyOpts {
 	transformX: boolean;
@@ -38,33 +42,41 @@ interface GetMeshPointOpts {
  * @see {@link https://www.construct.net/make-games/manuals/construct-3/scripting/scripting-reference/object-interfaces/iworldinstance | IWorldInstance documentation } */
 declare class IWorldInstance extends IInstance
 {
+	addEventListener<K extends keyof WorldInstanceEventMap<this>>(type: K, listener: (ev: WorldInstanceEventMap<this>[K]) => any): void;
+	removeEventListener<K extends keyof WorldInstanceEventMap<this>>(type: K, listener: (ev: WorldInstanceEventMap<this>[K]) => any): void;
+
 	readonly layout: IAnyProjectLayout;
 	readonly layer: IAnyProjectLayer;
 
 	x: number;
 	y: number;
 	setPosition(x: number, y: number): void;
-	getPosition(): number[];
+	getPosition(): Vec2Arr;
 	offsetPosition(dx: number, dy: number): void;
 
 	zElevation: number;
 	readonly totalZElevation: number;
 
+	originX: number;
+	originY: number;
+	setOrigin(x: number, y: number): void;
+	getOrigin(): Vec2Arr;
+
 	width: number;
 	height: number;
 	setSize(w: number, h: number): void;
-	getSize(): number[];
+	getSize(): Vec2Arr;
 
 	angle: number;
 	angleDegrees: number;
 
-	getBoundingBox(): DOMRect;
-	getBoundingQuad(): DOMQuad;
+	getBoundingBox(ignoreMesh?: boolean): DOMRect;
+	getBoundingQuad(ignoreMesh?: boolean): DOMQuad;
 	isOnScreen(): boolean;
 
 	isVisible: boolean;
 	opacity: number;
-	colorRgb: number[];
+	colorRgb: Vec3Arr;
 	blendMode: BlendModeParameter;
 	effects: IEffectInstance[];
 
@@ -81,11 +93,11 @@ declare class IWorldInstance extends IInstance
 
 	getParent(): IWorldInstance | null;
 	getTopParent(): IWorldInstance | null;
-	parents(): Iterable<IWorldInstance>;
+	parents(): Generator<IWorldInstance>;
 	getChildCount(): number;
 	getChildAt(index: number): IWorldInstance | null;
-	children(): Iterable<IWorldInstance>;
-	allChildren(): Iterable<IWorldInstance>;
+	children(): Generator<IWorldInstance>;
+	allChildren(): Generator<IWorldInstance>;
 	addChild(child: IWorldInstance, opts?: SceneGraphAddChildOpts): void;
 	removeChild(child: IWorldInstance): void;
 	removeFromParent(): void;
@@ -95,5 +107,5 @@ declare class IWorldInstance extends IInstance
 	releaseMesh(): void;
 	setMeshPoint(col: number, row: number, opts: SetMeshPointOpts): void;
 	getMeshPoint(col: number, row: number): GetMeshPointOpts;
-	getMeshSize(): number[];
+	getMeshSize(): Vec2Arr;
 }

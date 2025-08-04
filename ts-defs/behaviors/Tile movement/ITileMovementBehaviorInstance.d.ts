@@ -11,16 +11,16 @@ declare class ITileMovementBehaviorInstance<InstType> extends IBehaviorInstance<
 	simulateControl(dir: SimulateControlTypeTile): void;
 
 	setSpeed(x: number, y: number): void;
-	getSpeed(): number[];
+	getSpeed(): Vec2Arr;
 	setGridPosition(x: number, y: number, immediate?: boolean): void;
-	getGridPosition(): number[];
+	getGridPosition(): Vec2Arr;
 	modifyGridDimensions(width: number, height: number, x: number, y: number): void;
 	isMoving(): boolean;
 	isMovingDirection(dir: SimulateControlTypeTile): boolean;
 	canMoveTo(x: number, y: number): boolean;
 	canMoveDirection(dir: SimulateControlTypeTile, distance: number): boolean;
-	getTargetPosition(): number[];
-	getGridTargetPosition(): number[];
-	toGridSpace(x: number, y: number): number[];
-	fromGridSpace(x: number, y: number): number[];
+	getTargetPosition(): Vec2Arr;
+	getGridTargetPosition(): Vec2Arr;
+	toGridSpace(x: number, y: number): Vec2Arr;
+	fromGridSpace(x: number, y: number): Vec2Arr;
 }

@@ -1,7 +1,7 @@
 ﻿
 type TurretBehaviorTargetMode = "first" | "nearest";
 
-declare class TurretBehaviorEvent<InstType, BehInstType> extends BehaviorInstanceEvent<InstType, BehInstType>
+declare class TurretBehaviorEvent<InstType = IInstance, BehInstType = ITurretBehaviorInstance<InstType>> extends BehaviorInstanceEvent<InstType, BehInstType>
 {
 	targetInst: IWorldInstance;
 }

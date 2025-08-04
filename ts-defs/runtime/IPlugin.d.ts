@@ -5,6 +5,7 @@ declare class IPlugin_
 {
 	readonly runtime: IRuntime;
 
+    readonly id: string;
     readonly isSingleGlobal: boolean;
     readonly isWorldType: boolean;
     readonly isHTMLElementType: boolean;

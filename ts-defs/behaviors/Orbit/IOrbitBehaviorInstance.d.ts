@@ -4,7 +4,7 @@
 declare class IOrbitBehaviorInstance<InstType> extends IBehaviorInstance<InstType>
 {
 	setTargetPosition(x: number, y: number): void;
-	getTargetPosition(): number[];
+	getTargetPosition(): Vec2Arr;
 	pin(inst: IWorldInstance): void;
 	speed: number;
 	acceleration: number;

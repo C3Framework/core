@@ -8,7 +8,7 @@ declare class IShadowLightInstance extends IWorldInstance
 	lightX: number;
 	lightY: number;
 	lightHeight: number;
-	shadowColor: number[];
+	shadowColor: Vec3Arr;
 	tag: string;
 	castFrom: ShadowLightCastFromMode;
 }

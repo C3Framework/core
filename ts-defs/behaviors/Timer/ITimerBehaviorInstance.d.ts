@@ -1,7 +1,7 @@
 ﻿
 type TimerBehaviorTimerType = "once" | "regular";
 
-declare class TimerBehaviorEvent<InstType, BehInstType> extends BehaviorInstanceEvent<InstType, BehInstType>
+declare class TimerBehaviorEvent<InstType = IInstance, BehInstType = ITimerBehaviorInstance<InstType>> extends BehaviorInstanceEvent<InstType, BehInstType>
 {
 	tag: string;
 }

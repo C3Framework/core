@@ -11,7 +11,7 @@ declare class IRendererText
     isBold: boolean;
     isItalic: boolean;
 
-    setColor(color: number[]): void;
+    setColor(color: Vec3Arr): void;
     setColorRgb(r: number, g: number, b: number): void;
     setCssColor(cssColor: string): void;
 

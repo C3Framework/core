@@ -4,6 +4,7 @@
 declare class IBehavior_
 {
 	readonly runtime: IRuntime;
+    readonly id: string;
 
     /** Get all instances that use this behavior. The instances could be a mix of
      * different object types and plugin types. */

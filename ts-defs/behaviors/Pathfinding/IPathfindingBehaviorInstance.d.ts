@@ -30,8 +30,8 @@ declare class IPathfindingBehaviorInstance<InstType> extends IBehaviorInstance<I
 	getNodeCount(): number;
 	getNodeXAt(index: number): number;
 	getNodeYAt(index: number): number;
-	getNodeAt(index: number): number[];
-	nodes(): Iterable<number[]>;
+	getNodeAt(index: number): Vec2Arr;
+	nodes(): Generator<Vec2Arr>;
 
 	directMovementMode: PathfindingDirectMovementMode;
 	isEnabled: boolean;

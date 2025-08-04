@@ -29,7 +29,7 @@ declare class IPlatformBehaviorInstance<InstType> extends IBehaviorInstance<Inst
 	vectorX: number;
 	vectorY: number;
 	setVector(x: number, y: number): void;
-	getVector(): number[];
+	getVector(): Vec2Arr;
 	isDefaultControls: boolean;
 	isIgnoringInput: boolean;
 	isEnabled: boolean;

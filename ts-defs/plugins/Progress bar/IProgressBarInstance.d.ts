@@ -1,5 +1,5 @@
 ﻿
-interface ProgressInstanceEventMap<InstType> extends InstanceEventMap<InstType> {
+interface ProgressInstanceEventMap<InstType = IProgressBarInstance> extends WorldInstanceEventMap<InstType> {
 	"click": InstanceEvent<InstType>;
 }
 /** Represents the Progress Bar object.

@@ -5,6 +5,11 @@
  * such as "beforeprojectstart". */
 declare function runOnStartup(callback: (runtime: IRuntime) => void | Promise<void>): void;
 
+// For editor validation of TypeScript in event sheets
+declare namespace C3 {
+    let TypeScriptInEvents: any;
+}
+
 // General runtime type definitions
 type LayoutParameter = string | number;
 type LayerParameter = string | number;
@@ -25,6 +30,10 @@ interface TextFragmentPositionAndSize {
 	width: number,
 	height: number
 }
+
+type Vec2Arr = [number, number];
+type Vec3Arr = [number, number, number];
+type Vec4Arr = [number, number, number, number];
 
 type SDKPropertyType = number | string | boolean;
 type WrapperExtensionParameterType = number | string | boolean;
@@ -66,18 +75,17 @@ interface ConstructSaveEvent extends ConstructEvent {
 	saveData: any;
 }
 
-interface ConstructInstanceCreateEvent extends ConstructEvent {
-	instance: IInstance;
-}
-
-interface ConstructInstanceDestroyEvent extends ConstructEvent {
-	instance: IInstance;
-	isEndingLayout: boolean;
+interface ConstructDrawEvent extends ConstructEvent {
+	renderer: IRenderer;
 }
 
 interface RuntimeEventMap {
+	"suspend": ConstructEvent;
+	"resume": ConstructEvent;
 	"resize": ConstructResizeEvent;
+	"pretick": ConstructEvent;
 	"tick": ConstructEvent;
+	"tick2": ConstructEvent;
     "beforeprojectstart": ConstructEvent;
 	"afterprojectstart": ConstructEvent;
 	"beforeanylayoutstart": LayoutEvent;
@@ -100,8 +108,10 @@ interface RuntimeEventMap {
 	"save": ConstructSaveEvent;
 	"load": ConstructSaveEvent;
 	"afterload": ConstructEvent;
-	"instancecreate": ConstructInstanceCreateEvent;
-	"instancedestroy": ConstructInstanceDestroyEvent;
+	"instancecreate": InstanceEvent;
+	"hierarchyready": InstanceEvent<IWorldInstance>;
+	"instancedestroy": InstanceDestroyEvent;
+	"loadingprogress": ConstructEvent;
 }
 
 /** Represents the Construct engine itself, and is the main entry point in to various Construct APIs.
@@ -114,10 +124,12 @@ declare class IRuntime extends ConstructEventTarget<RuntimeEventMap>
 	readonly assets: IAssetManager;
 	readonly collisions: ICollisionEngine;
 	readonly storage: IStorage;
-	readonly keyboard?: IKeyboardObjectType<IInstance>;
-	readonly mouse?: IMouseObjectType<IInstance>;
-	readonly touch?: ITouchObjectType<IInstance>;
+	readonly keyboard: IKeyboardObjectType;
+	readonly mouse: IMouseObjectType;
+	readonly touch: ITouchObjectType;
+	readonly timelineController: ITimelineControllerObjectType;
 	readonly platformInfo: IPlatformInfo;
+	get renderer(): IRenderer;
 	readonly sdk: ISDKUtils;
 
 	readonly layout: IAnyProjectLayout;
@@ -127,11 +139,13 @@ declare class IRuntime extends ConstructEventTarget<RuntimeEventMap>
 
 	readonly projectName: string;
 	readonly projectVersion: string;
+	readonly projectId: string;
+	readonly projectUniqueId: string;
 	readonly exportDate: Date;
 	readonly isInWorker: boolean;
 	readonly viewportWidth: number;
 	readonly viewportHeight: number;
-	getViewportSize(): number[];
+	getViewportSize(): Vec2Arr;
 
 	readonly sampling: SamplingModeType;
 	readonly isPixelRoundingEnabled: boolean;
@@ -140,6 +154,7 @@ declare class IRuntime extends ConstructEventTarget<RuntimeEventMap>
 	get dtRaw(): number;
 	get gameTime(): number;
 	get wallTime(): number;
+	get tickCount(): number;
 	timeScale: number;
 	get isSuspended(): boolean;
 
@@ -183,7 +198,8 @@ declare class IRuntime extends ConstructEventTarget<RuntimeEventMap>
 
 	/** Runtime wrapper for creating a Web Worker, avoiding some issues with browser bugs and
 	 * nested workers.
-	 * @see {@link https://www.construct.net/en/make-games/manuals/construct-3/scripting/guides/creating-workers | Creating workers} */
+	 * @see {@link https://www.construct.net/en/make-games/manuals/construct-3/scripting/guides/creating-workers | Creating workers}
+	 * @deprecated All modern browsers now support nested workers so this method is no longer needed. */
 	createWorker(url: string, opts?: WorkerOptions): Promise<MessagePort>;
 
 	/** Invoke a browser download of the content at the given URL, using the provided filename. */
@@ -198,4 +214,6 @@ declare class IRuntime extends ConstructEventTarget<RuntimeEventMap>
 	 * @deprecated Use runtime.sdk.addLoadPromise() instead of runtime.addLoadPromise()
 	 */
 	addLoadPromise(promise: Promise<void>): void;
+
+	saveCanvasImage(format?: string, quality?: number, areaRect?: DOMRect): Promise<Blob>;
 }

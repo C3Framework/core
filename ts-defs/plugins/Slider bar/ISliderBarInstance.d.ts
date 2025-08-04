@@ -1,5 +1,5 @@
 ﻿
-interface SliderBarInstanceEventMap<InstType> extends InstanceEventMap<InstType> {
+interface SliderBarInstanceEventMap<InstType = ISliderBarInstance> extends WorldInstanceEventMap<InstType> {
 	"click": InstanceEvent<InstType>;
 	"change": InstanceEvent<InstType>;
 	"input": InstanceEvent<InstType>;

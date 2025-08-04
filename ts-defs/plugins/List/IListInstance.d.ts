@@ -1,5 +1,5 @@
 ﻿
-interface ListInstanceEventMap<InstType> extends InstanceEventMap<InstType> {
+interface ListInstanceEventMap<InstType = IListInstance> extends WorldInstanceEventMap<InstType> {
 	"click": InstanceEvent<InstType>;
 	"dblclick": InstanceEvent<InstType>;
 	"selectionchange": InstanceEvent<InstType>;

@@ -12,5 +12,5 @@ declare class IAnimation
     readonly frameCount: number;
 
     getFrames(): IAnimationFrame[];
-    frames(): Iterable<IAnimationFrame>;
+    frames(): Generator<IAnimationFrame>;
 }

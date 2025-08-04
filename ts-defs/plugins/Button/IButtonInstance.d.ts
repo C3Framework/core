@@ -1,5 +1,5 @@
 ﻿
-interface ButtonInstanceEventMap<InstType> extends InstanceEventMap<InstType> {
+interface ButtonInstanceEventMap<InstType = IButtonInstance> extends WorldInstanceEventMap<InstType> {
 	"click": InstanceEvent<InstType>;
 }
 

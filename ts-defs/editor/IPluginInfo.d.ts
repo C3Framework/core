@@ -68,6 +68,7 @@ declare namespace SDK {
 		AddFileDependency(o: PluginInfoFileDependency): void;
 		AddRemoteScriptDependency(url: string, type?: PluginInfoScriptType): void;
 		SetGooglePlayServicesEnabled(e: boolean): void;
+		SetWrapperExportProperties(componentId: string, propertyIds: string[]): void;
 
 		SetRuntimeModuleMainScript(path: string): void;
 		AddC3RuntimeScript(path: string): void;

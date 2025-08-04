@@ -4,7 +4,7 @@ type AdvancedRandomProbabilityTableEntry = number | string;
 
 /** Represents the Advanced Random object.
  * @see {@link https://www.construct.net/make-games/manuals/construct-3/scripting/scripting-reference/plugin-interfaces/advanced-random | IAdvancedRandomObjectType documentation } */
-declare class IAdvancedRandomObjectType<InstType extends IInstance> extends IObjectType<InstType>
+declare class IAdvancedRandomObjectType<InstType extends IInstance = IInstance> extends IObjectType<InstType>
 {
 	seed: string;
 	octaves: number;

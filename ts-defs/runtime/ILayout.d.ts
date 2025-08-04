@@ -17,23 +17,26 @@ type LayoutProjection = "perspective" | "orthographic";
  * @see {@link https://www.construct.net/make-games/manuals/construct-3/scripting/scripting-reference/layout-interfaces/ilayout | ILayout documentation } */
 declare class ILayout extends ConstructEventTarget<LayoutEventMap>
 {
+    readonly runtime: IRuntime;
     readonly name: string;
     readonly index: number;
 
     width: number;
     height: number;
     setSize(w: number, h: number): void;
-    getSize(): number[];
+    getSize(): Vec2Arr;
 
     scale: number;
     angle: number;
     scrollX: number;
     scrollY: number;
     scrollTo(x: number, y: number): void;
-    getScrollPosition(): number[];
+    getScrollPosition(): Vec2Arr;
+    readonly isUnboundedScrolling: boolean;
+
     getLayer(nameOrIndex: LayerParameter): IAnyProjectLayer | null;
     getAllLayers(): IAnyProjectLayer[];
-    allLayers(): Iterable<IAnyProjectLayer>;
+    allLayers(): Generator<IAnyProjectLayer>;
 
     addLayer(layerName: string, insertBy: ILayer | null, where: LayerPositionWhere): void;
     moveLayer(layer: ILayer, insertBy: ILayer | null, where: LayerPositionWhere): void;
@@ -41,7 +44,7 @@ declare class ILayout extends ConstructEventTarget<LayoutEventMap>
     removeAllDynamicLayers(): void;
 
     setVanishingPoint(vpX: number, vpY: number): void;
-    getVanishingPoint(): number[];
+    getVanishingPoint(): Vec2Arr;
 
     projection: LayoutProjection;
 }

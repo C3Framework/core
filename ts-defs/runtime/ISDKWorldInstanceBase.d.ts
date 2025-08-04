@@ -7,6 +7,11 @@ declare class ISDKWorldInstanceBase_ extends IWorldInstanceSDKBase
 
     _onRendererContextLost(): void;
     _onRendererContextRestored(): void;
+
+    _draw(renderer: IRenderer): void;
+
+    _rendersToOwnZPlane(): boolean;
+    _mustPreDraw(): boolean;
 }
 
 declare var ISDKWorldInstanceBase: typeof ISDKWorldInstanceBase_;

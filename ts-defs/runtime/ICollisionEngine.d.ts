@@ -10,7 +10,7 @@ declare class ICollisionEngine
     testOverlapSolid(wi: IWorldInstance): IWorldInstance | null;
 
 	setCollisionCellSize(width: number, height: number): void;
-    getCollisionCellSize(): number[];
+    getCollisionCellSize(): Vec2Arr;
 
     getCollisionCandidates(objectClasses: IObjectClass<IWorldInstance> | IObjectClass<IWorldInstance>[], rect: DOMRect): IWorldInstance[];
 }

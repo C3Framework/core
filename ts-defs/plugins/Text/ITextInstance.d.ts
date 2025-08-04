@@ -10,7 +10,7 @@ declare class ITextInstance extends IWorldInstance
 	isBold: boolean;
 	isItalic: boolean;
 	sizePt: number;
-	fontColor: number[];
+	fontColor: Vec3Arr;
 	lineHeight: number;
 	horizontalAlign: TextAlignHorizontalMode;
 	verticalAlign: TextAlignVerticalMode;
@@ -21,7 +21,7 @@ declare class ITextInstance extends IWorldInstance
 	setAutoResolutionMode(): void;
 	readonly textWidth: number;
 	readonly textHeight: number;
-	getTextSize(): number[];
+	getTextSize(): Vec2Arr;
 	hasTagAtPosition(tag: string, x: number, y: number): boolean;
 	getTagAtPosition(x: number, y: number): string;
 	getTagCount(tag: string): number;

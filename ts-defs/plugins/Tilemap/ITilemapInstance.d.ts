@@ -5,15 +5,15 @@ declare class ITilemapInstance extends IWorldInstance
 {
 	readonly mapWidth: number;
 	readonly mapHeight: number;
-	getMapSize(): number[];
+	getMapSize(): Vec2Arr;
 
 	readonly mapDisplayWidth: number;
 	readonly mapDisplayHeight: number;
-	getMapDisplaySize(): number[];
+	getMapDisplaySize(): Vec2Arr;
 
 	readonly tileWidth: number;
 	readonly tileHeight: number;
-	getTileSize(): number[];
+	getTileSize(): Vec2Arr;
 
 	getTileAt(x: number, y: number): number;
 	setTileAt(x: number, y: number, tile: number): void;

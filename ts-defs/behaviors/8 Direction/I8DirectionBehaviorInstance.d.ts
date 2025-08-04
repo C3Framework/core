@@ -15,7 +15,7 @@ declare class I8DirectionBehaviorInstance<InstType> extends IBehaviorInstance<In
 	vectorX: number;
 	vectorY: number;
 	setVector(x: number, y: number): void;
-	getVector(): number[];
+	getVector(): Vec2Arr;
 	isDefaultControls: boolean;
 	isIgnoringInput: boolean;
 	isAllowSliding: boolean;

@@ -1,10 +1,10 @@
 ﻿
 type DrawingCanvasGradientDirection = "horizontal" | "vertical";
 type DrawingCanvasLineCap = "butt" | "square";
-type DrawingCanvasColor = number[];
+type DrawingCanvasColor = Vec3Arr | Vec4Arr;
 type DrawingCanvasPoly = Array<Array<number>>;
 
-interface DrawingCanvasInstanceEventMap<InstType> extends InstanceEventMap<InstType> {
+interface DrawingCanvasInstanceEventMap<InstType = IDrawingCanvasInstance> extends WorldInstanceEventMap<InstType> {
 	"resolutionchange": InstanceEvent<InstType>;
 }
 
@@ -18,7 +18,7 @@ declare class IDrawingCanvasInstance extends IWorldInstance
 	readonly pixelScale: number;
 	readonly surfaceDeviceWidth: number;
 	readonly surfaceDeviceHeight: number;
-	getSurfaceDeviceSize(): number[];
+	getSurfaceDeviceSize(): Vec2Arr;
 	setFixedResolutionMode(fixedWidth: number, fixedHeight: number): void;
 	setAutoResolutionMode(): void;
 
@@ -40,4 +40,5 @@ declare class IDrawingCanvasInstance extends IWorldInstance
 	pasteInstances(instances: IWorldInstance[], includeFx?: boolean): Promise<void>;
 	getImagePixelData(): Promise<ImageData>;
 	loadImagePixelData(imageData: ImageData, premultiplyAlpha?: boolean): void;
+	saveImage(format?: string, quality?: number, areaRect?: DOMRect): Promise<Blob>;
 }

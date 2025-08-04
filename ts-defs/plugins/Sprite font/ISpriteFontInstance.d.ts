@@ -15,7 +15,7 @@ declare class ISpriteFontInstance extends IWorldInstance
 	readAloud: boolean;
 	readonly textWidth: number;
 	readonly textHeight: number;
-	getTextSize(): number[];
+	getTextSize(): Vec2Arr;
 	hasTagAtPosition(tag: string, x: number, y: number): boolean;
 	getTagAtPosition(x: number, y: number): string;
 	getTagCount(tag: string): number;

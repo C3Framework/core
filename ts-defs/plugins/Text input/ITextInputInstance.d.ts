@@ -1,5 +1,5 @@
 ﻿
-interface TextInputInstanceEventMap<InstType> extends InstanceEventMap<InstType> {
+interface TextInputInstanceEventMap<InstType = ITextInputInstance> extends WorldInstanceEventMap<InstType> {
 	"click": InstanceEvent<InstType>;
 	"dblclick": InstanceEvent<InstType>;
 	"change": InstanceEvent<InstType>;

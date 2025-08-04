@@ -5,16 +5,16 @@ type HTMLSetAttributeMode = "set" | "remove";
 type HTMLInsertAtType = "start" | "end" | "replace";
 type HTMLScrollDirectionType = "left" | "top";
 
-interface HTMLInstanceElementEvent<InstType> extends InstanceEvent<InstType> {
+interface HTMLInstanceElementEvent<InstType = IHTMLElementInstance> extends InstanceEvent<InstType> {
 	targetId: string;
 	targetClass: string;
 }
 
-interface HTMLInstanceAnimationEvent<InstType> extends HTMLInstanceElementEvent<InstType> {
+interface HTMLInstanceAnimationEvent<InstType = IHTMLElementInstance> extends HTMLInstanceElementEvent<InstType> {
 	animationName: string;
 }
 
-interface HTMLInstanceEventMap<InstType> extends InstanceEventMap<InstType> {
+interface HTMLInstanceEventMap<InstType = IHTMLElementInstance> extends WorldInstanceEventMap<InstType> {
 	"click": HTMLInstanceElementEvent<InstType>;
 	"animationend": HTMLInstanceAnimationEvent<InstType>;
 }
