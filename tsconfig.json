@@ -1,9 +1,13 @@
-
 {
-	"compilerOptions": {
-		"target": "ES2021", 
-		"module": "ES2022",
-		"moduleResolution": "Node",
-		"skipLibCheck": false
-	}
+    "include": [
+        "./src/**/*.ts"
+    ],
+  "compilerOptions": {
+    "module": "nodenext",
+    "target": "esnext",
+    "declaration": true,
+    "skipLibCheck": true,
+    "moduleResolution": "nodenext",
+    "outDir": "./dist"
+  },
 }

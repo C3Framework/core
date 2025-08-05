@@ -1,6 +1,6 @@
-import { buildConfig as bc, loadBuildConfig } from '../../js/config.js';
-import { addonJson, loadAddonConfig, setAddonJson } from "../../js/parser.js";
-import { filepath, removeFilesRecursively, titleCase } from '../../js/utils.js';
+import { buildConfig as bc, loadBuildConfig } from '../lib/config.js';
+import { addonJson, loadAddonConfig, setAddonJson } from "../lib/parser.js";
+import { filepath, removeFilesRecursively, titleCase } from '../lib/utils.js';
 import {
     copyFileSync,
     existsSync,
@@ -10,7 +10,7 @@ import {
 } from 'fs';
 import { isDev, writeAddonConfig, writeLanguages } from './build.js';
 import convert from 'color-convert';
-import { hexToFilter } from '../../js/vendor/hexToFilter.js';
+import { hexToFilter } from '../lib/vendor/hexToFilter.js';
 import { join } from 'path';
 import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
@@ -39,7 +39,7 @@ function ensureFoldersExists() {
     mkdirSync(filepath(exportPath, "lang"));
 }
 
-/** @type {import('../../types/config.js').ThemeConfig} */
+/** @type {import('../../ts/types/config.js').ThemeConfig} */
 let themeJson;
 
 function generateShades(hex, range = 33) {
@@ -188,7 +188,7 @@ export async function buildTheme() {
 
     themeJson = addonJson;
 
-    /** @returns {import('../../types/config.js').ThemeConfig} */
+    /** @returns {import('../../ts/types/config.js').ThemeConfig} */
     const cloneConfig = () => JSON.parse(JSON.stringify(themeJson));
 
     const primary = themeJson.colors?.pallete?.primary.toLowerCase();

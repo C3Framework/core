@@ -46,10 +46,16 @@ export function addonToJson(addon, config = {}) {
     }
 
     let json = JSON.stringify(addon, null, !config?.minify ? 4 : undefined);
-    json = json.replace(/"(\(inst\) => inst\.[a-zA-Z0-9$_]+|\(\) => \(\) => true)"/g, '$1')
-        .replace(
-            /"(linkCallback|infoCallback)": "(.*)",?$/gm, '"$1": $2'
-        );
+
+    json = json.replace(/('|")(\(inst\) => inst\[\\?('|")([a-zA-Z0-9$_]+)\\?\3\]|((\(\) => \(\) => true)))\1/g, (_match, _p1, p2, _p3, p4) => {
+        if (p4) {
+            return `(inst) => inst["${p4}"]`;
+        }
+
+        return p2;
+    }).replace(
+        /"(linkCallback|infoCallback)": "(.*)",?$/gm, '"$1": $2'
+    );
 
     return json;
 }

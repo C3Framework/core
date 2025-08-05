@@ -1,12 +1,12 @@
 import figlet from "figlet";
 import windowSize from "window-size";
-import * as cli from '../../js/cli.js';
+import * as cli from '../lib/cli.js';
 import gradient from "gradient-string";
 import chalk from "chalk";
 import { Command } from "commander";
 
 /**
- * @param {Command[]} commands 
+ * @param {Command[]} commands
  */
 export default function (commands, version) {
     cli.clear();

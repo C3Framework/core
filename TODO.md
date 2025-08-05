@@ -1,5 +1,6 @@
 - [X] Add plugin config
-- [] Add wapper extensions
-- [] Add dom scripts
 - [X] Add doc generator
 - [] Add default properties to addon properties (initialValue etc)
+- [] Add wapper extensions
+- [] Add dom scripts
+- [] Replace esbuild for better bundler

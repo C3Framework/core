@@ -1,13 +1,13 @@
-import { loadBuildConfig } from "../../js/config.js";
-import { template } from "../../js/templates.js";
+import { loadBuildConfig } from "../lib/config.js";
+import { template } from "../lib/templates.js";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'fs';
-import { filepath } from "../../js/utils.js";
-import { parseAddonScript } from "../../js/parser/addonConfig.js";
+import { filepath } from "../lib/utils.js";
+import { parseAddonScript } from "../lib/parser/addonConfig.js";
 import { join } from "path";
-import * as cli from '../../js/cli.js';
+import * as cli from '../lib/cli.js';
 import chalk from "chalk";
 import build from "./build.js";
-import { PLURAL_ADDON } from "../../js/constants.js";
+import { PLURAL_ADDON } from "../lib/constants.js";
 
 function getExampleList(config) {
     const examplesPath = filepath(config.examplesPath);
@@ -80,7 +80,7 @@ export default async function () {
 
     const config = await loadBuildConfig();
 
-    /** @type {import("../../types/config.js").AddonConfig} */
+    /** @type {import("../../ts/types/config.js").AddonConfig} */
     const addon = await parseAddonScript(filepath(config.sourcePath, config.addonScript));
 
     let md = template('doc.md', {

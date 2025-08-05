@@ -1,8 +1,17 @@
-import type { ProjectAddon, Property } from "./project";
-import type { AcceptedPlugin } from "postcss/lib/postcss";
+declare enum AddonType {
+    behavior = "behavior",
+    plugin = "plugin",
+}
 
-export interface AddonConfig extends ProjectAddon {
-    addonType: "behavior" | "plugin";
+declare enum AddonTypeNamespace {
+    behavior = "Behaviors",
+    plugin = "Plugins",
+}
+
+type AddonTypeOpts = keyof typeof AddonType;
+
+interface AddonConfig extends ProjectAddon {
+    addonType: AddonTypeOpts;
     editorScripts?: string[];
     properties: Property[];
     aceCategories: {
@@ -30,14 +39,14 @@ type ThemeColors = {
     pallete?: { [key: string]: string };
 };
 
-export interface ThemeConfig extends ProjectAddon {
+interface ThemeConfig extends ProjectAddon {
     addonType: "theme";
     colors: ThemeColors;
     variants?: { [key: string]: ThemeColors };
 }
 
-export interface BehaviorConfig extends AddonConfig {
-    addonType: "behavior";
+interface BehaviorConfig extends AddonConfig {
+    addonType: 'behavior';
     info?: {
         Set?: {
             IsOnlyOneAllowed?: boolean;
@@ -47,8 +56,8 @@ export interface BehaviorConfig extends AddonConfig {
     };
 }
 
-export interface PluginConfig extends AddonConfig {
-    addonType: "plugin";
+interface PluginConfig extends AddonConfig {
+    addonType: 'plugin';
     type:
     | "object"
     | "world"
@@ -81,7 +90,7 @@ export interface PluginConfig extends AddonConfig {
     };
 }
 
-export interface BuiltAddonConfig extends AddonConfig {
+interface BuiltAddonConfig extends AddonConfig {
     typeDefs?: string[];
     Aces?: {
         actions: any;
@@ -91,7 +100,7 @@ export interface BuiltAddonConfig extends AddonConfig {
     [x: string]: any;
 }
 
-export interface BuildConfig {
+interface BuildConfig {
     /**
      * Safely minify the code
      * @default true
@@ -177,6 +186,6 @@ export interface BuildConfig {
      * @default false
      */
     postcss?: {
-        plugins?: AcceptedPlugin[];
+        plugins?: any[];
     } | boolean;
 }

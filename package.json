@@ -1,54 +1,82 @@
 {
-  "name": "c3-framework",
-  "version": "1.0.0",
-  "description": "Construct 3 Addon Development Framework",
-  "type": "module",
-  "bin": {
-    "c3fo": "./bin/c3fo.js"
-  },
-  "types": "index.ts",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/C3Framework/core"
-  },
-  "scripts": {},
-  "author": {
-    "name": "Luan Himmlisch",
-    "email": "luan@himmlisch.com.mx",
-    "url": "https://github.com/LuanHimmlisch"
-  },
-  "license": "MIT",
-  "dependencies": {
-    "@csstools/postcss-sass": "^5.1.1",
-    "acorn": "^8.12.0",
-    "acorn-typescript": "^1.4.13",
-    "acorn-walk": "^8.3.3",
-    "adm-zip": "^0.5.14",
-    "autoprefixer": "^10.4.21",
-    "chalk": "^5.3.0",
-    "chokidar": "^3.6.0",
-    "color-convert": "^2.0.1",
-    "commander": "^12.1.0",
-    "cors": "^2.8.5",
-    "cssnano": "^7.0.6",
-    "dot-path-value": "^0.0.10",
-    "esbuild": "^0.21.5",
-    "escodegen": "^2.1.0",
-    "express": "^4.19.2",
-    "figlet": "^1.7.0",
-    "gradient-string": "^2.0.2",
-    "mime": "^4.0.3",
-    "postcss": "^8.5.3",
-    "postcss-scss": "^4.0.9",
-    "sass": "^1.77.6",
-    "super-fast-md5": "^1.0.3",
-    "tinyglobby": "^0.2.12",
-    "window-size": "^1.1.1"
-  },
-  "devDependencies": {
-    "@types/adm-zip": "^0.5.5",
-    "@types/cors": "^2.8.17",
-    "@types/escodegen": "^0.0.10",
-    "@types/express": "^4.17.21"
-  }
+    "name": "@c3framework/core",
+    "version": "1.0.0",
+    "description": "Construct 3 Addon Development Framework",
+    "license": "MIT",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/C3Framework/core"
+    },
+    "author": {
+        "name": "Luan Himmlisch",
+        "email": "luan@himmlisch.com.mx",
+        "url": "https://github.com/LuanHimmlisch"
+    },
+    "funding": {
+        "type": "individual",
+        "url": "https://github.com/sponsors/LuanHimmlisch/"
+    },
+    "scripts": {
+        "build": "vite build"
+    },
+    "main": "./dist/core.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": "./dist/core.js",
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "/dist",
+        "/bin",
+        "/templates",
+        "/src"
+    ],
+    "bin": {
+        "c3fo": "./bin/c3fo.js"
+    },
+    "keywords": [
+        "construct-3",
+        "construct3",
+        "scirra",
+        "framework",
+        "addons",
+        "plugins",
+        "themes"
+    ],
+    "dependencies": {
+        "@csstools/postcss-sass": "^5.1.1",
+        "acorn": "^8.12.0",
+        "acorn-typescript": "^1.4.13",
+        "acorn-walk": "^8.3.4",
+        "adm-zip": "^0.5.14",
+        "autoprefixer": "^10.4.21",
+        "chalk": "^5.3.0",
+        "chokidar": "^3.6.0",
+        "color-convert": "^2.0.1",
+        "commander": "^12.1.0",
+        "cors": "^2.8.5",
+        "cssnano": "^7.0.6",
+        "dot-path-value": "^0.0.10",
+        "esbuild": "^0.25.8",
+        "escodegen": "^2.1.0",
+        "express": "^4.19.2",
+        "figlet": "^1.7.0",
+        "gradient-string": "^2.0.2",
+        "postcss": "^8.5.3",
+        "postcss-scss": "^4.0.9",
+        "sass": "^1.77.6",
+        "super-fast-md5": "^1.0.3",
+        "tinyglobby": "^0.2.12",
+        "window-size": "^1.1.1"
+    },
+    "devDependencies": {
+        "@types/adm-zip": "^0.5.5",
+        "@types/cors": "^2.8.17",
+        "@types/escodegen": "^0.0.10",
+        "@types/express": "^4.17.21",
+        "typescript-bundle": "^1.0.18",
+        "vite": "^7.0.6",
+        "vite-plugin-dts": "^4.5.4"
+    }
 }

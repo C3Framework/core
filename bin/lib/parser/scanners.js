@@ -29,7 +29,7 @@ async function processDependencyFile(config, filename, ext, type) {
 }
 
 /**
- * @param {BuildConfig} config 
+ * @param {BuildConfig} config
  */
 export function getTypeDefinitions(config) {
     const dirPath = filepath(config.defPath);
@@ -54,8 +54,8 @@ export function getTypeDefinitions(config) {
 }
 
 /**
- * @param {import('../../types/config.js').BuildConfig} config 
- * @param {import('../../types/config.js').BuiltAddonConfig} addon 
+ * @param {import('../../ts/types/config.js').BuildConfig} config
+ * @param {import('../../ts/types/config.js').BuiltAddonConfig} addon
  */
 export async function getFileListFromConfig(config, addon) {
     const exportPath = filepath(config.exportPath);
@@ -114,8 +114,8 @@ export async function getFileListFromConfig(config, addon) {
     await scan(libPath);
 
 
-    // There's a mismatch betwwen the files from libs and 
-    // the files on the config... 
+    // There's a mismatch betwwen the files from libs and
+    // the files on the config...
     // TODO: Check if these are remote files
     const leftFiles = Object.keys(copyConfig);
     if (leftFiles.length) {

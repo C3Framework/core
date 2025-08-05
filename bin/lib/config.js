@@ -2,7 +2,7 @@ import { pathToFileURL } from 'url';
 import { filepath } from './utils.js';
 import fs from 'fs';
 
-/** @type {import('../types/config.js').BuildConfig} */
+/** @type {import('../ts/types/config.js').BuildConfig} */
 const defaultConfig = {
     minify: true,
     host: 'http://localhost',
@@ -23,17 +23,17 @@ const defaultConfig = {
     postcss: false,
 };
 
-/** @type {import('../types/config.js').BuildConfig} */
+/** @type {import('../ts/types/config.js').BuildConfig} */
 let _buildConfig;
 
-/**  @returns {import('../types/config.js').BuildConfig} */
+/**  @returns {import('../ts/types/config.js').BuildConfig} */
 export function buildConfig() {
     if (!_buildConfig) throw new Error('Trying to access build config before initialization');
 
     return _buildConfig;
 }
 
-/** @returns {Promise<import('../types/config.js').BuildConfig>} */
+/** @returns {Promise<import('../ts/types/config.js').BuildConfig>} */
 export async function loadBuildConfig() {
     if (_buildConfig) {
         return _buildConfig;

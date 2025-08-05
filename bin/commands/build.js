@@ -25,7 +25,7 @@ import {
     removeFilesRecursively,
     sleep,
     titleCase
-} from '../../js/utils.js';
+} from '../lib/utils.js';
 
 import {
     ACE_TYPES,
@@ -35,12 +35,12 @@ import {
     TS_Types,
     aceDict,
     aceList,
-} from '../../js/constants.js';
+} from '../lib/constants.js';
 
-import { buildConfig as bc, loadBuildConfig, tsConfig } from '../../js/config.js';
-import { addonJson, buildFile, partialAddonJson, readAddonConfig, resetParsedConfig, setPartialAddonJson } from '../../js/parser.js';
-import { __, loadLanguage, resetLoadedLangs } from '../../js/lang.js';
-import * as cli from '../../js/cli.js';
+import { buildConfig as bc, loadBuildConfig, tsConfig } from '../lib/config.js';
+import { addonJson, buildFile, partialAddonJson, readAddonConfig, resetParsedConfig, setPartialAddonJson } from '../lib/parser.js';
+import { __, loadLanguage, resetLoadedLangs } from '../lib/lang.js';
+import * as cli from '../lib/cli.js';
 import chalk from 'chalk';
 import { dirname, join, normalize } from 'path';
 import { buildTheme } from './theme.js';
@@ -226,8 +226,8 @@ function formatParam(param = {}, methodId = null) {
 }
 
 /**
- * @param {import('../../types/config.js').BuildConfig} config
- * @param {import('../../types/config.js').BuiltAddonConfig} addon
+ * @param {import('../../ts/types/config.js').BuildConfig} config
+ * @param {import('../../ts/types/config.js').BuiltAddonConfig} addon
  */
 async function addonFromConfig(config, addon) {
     return {
@@ -582,8 +582,8 @@ function acesFromConfig(config) {
 }
 
 /**
- * @param {import('../../types/config.js').BuildConfig} config
- * @param {import('../../types/config.js').BuiltAddonConfig} addon
+ * @param {import('../../ts/types/config.js').BuildConfig} config
+ * @param {import('../../ts/types/config.js').BuiltAddonConfig} addon
  */
 function distribute(config, addon) {
     const compiledAddonPath = filepath(config.exportPath, 'addon.json');
@@ -859,7 +859,7 @@ function parseScript(ts) {
                 }
             }
 
-            acesRuntime[aceType][id] = `(inst) => inst.${key}`;
+            acesRuntime[aceType][id] = `(inst) => inst["${key}"]`;
             aces[category][aceType].push({
                 ...config,
                 id,
@@ -934,11 +934,16 @@ function parseScript(ts) {
         });
     });
 
+    const contents = esbuild.transformSync(ts, {
+        loader: 'ts',
+        format: 'esm',
+        treeShaking: true,
+        minifySyntax: false,
+        tsconfigRaw: tsConfig(),
+    }).code;
+
     return {
-        contents: esbuild.transformSync(ts, {
-            loader: 'ts',
-            tsconfigRaw: tsConfig(),
-        }).code
+        contents
     }
 }
 
