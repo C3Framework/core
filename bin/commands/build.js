@@ -1071,8 +1071,11 @@ export function writeAddonScriptingInterface() {
     ts += generateDocBlock([
         `Represents an instance of the plugin ${addonJson.id}.`,
         '',
+        ...(addonJson.info?.Set?.IsDeprecated ? ['@deprecated'] : []),
+        `@author ${addonJson.author}`,
         `@description ${endsWithDot(addonJson.description)}`,
-        `@version ${addonJson.version}`
+        `@version ${addonJson.version}`,
+        ...(addonJson?.website ? ['@see ' + addonJson?.website] : []),
     ])
 
     ts += `declare class ${className}${generic} extends ${parentClassName}${generic}\n{\n`;
@@ -1110,11 +1113,6 @@ export function writeAddonScriptingInterface() {
                 }
 
                 ts += TAB;
-
-                if (isAsync) {
-                    ts += "async ";
-                }
-
                 ts += definition.scriptName;
 
                 if (!definition.params?.length) {
