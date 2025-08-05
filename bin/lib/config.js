@@ -40,7 +40,7 @@ export async function loadBuildConfig() {
     }
 
 
-    const configPath = filepath('./c3.config.js');
+    const configPath = filepath('./c3.config.ts');
     if (fs.existsSync(configPath)) {
         const loadedConfig = await import(pathToFileURL(configPath)).then(v => v.default);
         _buildConfig = { ...defaultConfig, ...loadedConfig };

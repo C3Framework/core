@@ -20,21 +20,21 @@
     "scripts": {
         "build": "vite build"
     },
-    "main": "./dist/core.js",
-    "types": "./dist/index.d.ts",
+    "main": "dist/core.js",
+    "types": "dist/index.d.ts",
+    "bin": {
+        "c3fo": "bin/c3fo.js"
+    },
     "exports": {
         ".": "./dist/core.js",
         "./package.json": "./package.json"
     },
     "files": [
-        "/dist",
-        "/bin",
-        "/templates",
-        "/src"
+        "dist/",
+        "bin/",
+        "templates/",
+        "src/"
     ],
-    "bin": {
-        "c3fo": "./bin/c3fo.js"
-    },
     "keywords": [
         "construct-3",
         "construct3",
