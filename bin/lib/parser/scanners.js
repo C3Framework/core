@@ -43,11 +43,12 @@ export function getTypeDefinitions(config, addon) {
         .map((filename) => {
 
             const input = filepath(defPath, '/', filename);
-            const output = input.replace(dirPath, filepath(exportPath, 'c3runtime/'))
+            const exportBaseFull = filepath(exportPath);
+            const output = input.replace(dirPath, exportBaseFull)
 
             writeFileRecursively(output, readFileSync(input));
 
-            return trimPathSlashes(output.replace(filepath(exportPath), ''));
+            return trimPathSlashes(output.replace(exportBaseFull, ''));
         });
 
     if (addon.interface !== false && (addon.interface.autoGenerate ?? true)) {
