@@ -21,6 +21,7 @@ interface AddonConfigInterface {
 
 interface AddonConfig extends ProjectAddon {
     addonType: AddonTypeOpts;
+    minConstructVersion?: string,
     editorScripts?: string[];
     properties: Property[];
     aceCategories: {
@@ -57,6 +58,8 @@ interface ThemeConfig extends ProjectAddon {
 
 interface BehaviorConfig extends AddonConfig {
     addonType: 'behavior';
+    /** @default true */
+    supportsWorkerMode?: boolean,
     info?: {
         Set?: {
             IsOnlyOneAllowed?: boolean;
@@ -72,6 +75,9 @@ interface PluginConfig extends AddonConfig {
     | "object"
     | "world"
     | "dom";
+    /** @default true */
+    supportsWorkerMode?: boolean,
+    wrapperExportProperties?: { [key: string]: Record<string, string> }
     info?: {
         defaultImageUrl?: string;
         Set?: {

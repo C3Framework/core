@@ -235,6 +235,8 @@ async function addonFromConfig(config, addon) {
     return {
         "is-c3-addon": true,
         "sdk-version": 2,
+        ...(addon.minConstructVersion ? { 'min-construct-version': addon.minConstructVersion } : {}),
+        'supports-worker-mode': addon.supportsWorkerMode ?? true,
         type: addon.addonType,
         name: addon.name,
         id: addon.id,
