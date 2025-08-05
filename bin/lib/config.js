@@ -40,11 +40,15 @@ export async function loadBuildConfig() {
     }
 
 
-    const configPath = filepath('./c3.config.ts');
-    if (fs.existsSync(configPath)) {
-        const loadedConfig = await import(pathToFileURL(configPath)).then(v => v.default);
-        _buildConfig = { ...defaultConfig, ...loadedConfig };
-        return _buildConfig;
+    const configPaths = ['./c3.config.ts', './c3.config.js'];
+
+    for (let i = 0; i < configPaths.length; i++) {
+        const configPath = filepath(configPaths[i]);
+        if (fs.existsSync(configPath)) {
+            const loadedConfig = await import(pathToFileURL(configPath)).then(v => v.default);
+            _buildConfig = { ...defaultConfig, ...loadedConfig };
+            return _buildConfig;
+        }
     }
 
     return _buildConfig = defaultConfig;
