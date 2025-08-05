@@ -44,6 +44,9 @@
         "plugins",
         "themes"
     ],
+    "publishConfig": {
+        "access": "public"
+    },
     "dependencies": {
         "@csstools/postcss-sass": "^5.1.1",
         "acorn": "^8.12.0",

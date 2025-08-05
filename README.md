@@ -14,7 +14,7 @@ Since the framework is fully configurable, you can install this package by yours
 You can install this package through NPM using this repo URL:
 
 ```
-npm install https://github.com/C3Framework/core
+npm install @c3framework/core
 ```
 
 ## Structure
