@@ -56,18 +56,18 @@ export function registerEditorClass(inst: any, SDK: any, config: BuiltAddonConfi
 
     if (!addonType) throw new Error("Unexpected addon type trying to be registered");
 
-    const info = inst['_info'];
+    const addonInfo = inst['_info'];
 
     SDK['Lang'].PushContext(addonType + "." + config['id'].toLowerCase());
 
-    info['SetName'](utils['lang'](".name"));
-    info['SetDescription'](utils['lang'](".description"));
-    info['SetCategory'](config['category']);
-    info['SetAuthor'](config['author']);
-    info['SetHelpUrl'](utils['lang'](".help-url"));
+    addonInfo['SetName'](utils['lang'](".name"));
+    addonInfo['SetDescription'](utils['lang'](".description"));
+    addonInfo['SetCategory'](config['category']);
+    addonInfo['SetAuthor'](config['author']);
+    addonInfo['SetHelpUrl'](utils['lang'](".help-url"));
 
     if (config['icon']) {
-        info['SetIcon'](
+        addonInfo['SetIcon'](
             config['icon'],
             config['icon'].endsWith(".svg") ? "image/svg+xml" : "image/png"
         );
@@ -120,7 +120,7 @@ export function registerEditorClass(inst: any, SDK: any, config: BuiltAddonConfi
                 dependency['fileType'] = getMimeType(filename);
             }
 
-            info['AddFileDependency'](dependency);
+            addonInfo['AddFileDependency'](dependency);
         });
     }
 
@@ -141,23 +141,22 @@ export function registerEditorClass(inst: any, SDK: any, config: BuiltAddonConfi
             scriptInterfaces['plugin'] = interfaceOpts['pluginName'];
         }
 
-        info['SetScriptInterfaceNames'](scriptInterfaces);
+        addonInfo['SetScriptInterfaceNames'](scriptInterfaces);
     }
 
     if (config['typeDefs']) {
-        info['SetTypeScriptDefinitionFiles'](config['typeDefs']);
+        addonInfo['SetTypeScriptDefinitionFiles'](config['typeDefs']);
     }
 
     if (config['info']) {
-        const info = config['info'];
-        const infoSetOptions = info['Set'];
+        const infoSetOptions = config['info']['Set'];
 
         if (infoSetOptions) {
             Object.keys(infoSetOptions).forEach((key) => {
                 const value = infoSetOptions[key];
-                const fn = info[`Set${key}`];
+                const fn = addonInfo[`Set${key}`];
                 if (fn && value !== null && value !== undefined)
-                    fn.call(info, value);
+                    fn.call(addonInfo, value);
             });
         }
     }
@@ -165,7 +164,7 @@ export function registerEditorClass(inst: any, SDK: any, config: BuiltAddonConfi
 
     SDK['Lang'].PushContext(".properties");
 
-    info['SetProperties'](
+    addonInfo['SetProperties'](
         (config['properties'] || []).map(
             (prop: Property) => new SDK['PluginProperty'](prop.type, prop.id, prop.options)
         )
