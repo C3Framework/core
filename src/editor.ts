@@ -124,6 +124,26 @@ export function registerEditorClass(inst: any, SDK: any, config: BuiltAddonConfi
         });
     }
 
+    const interfaceOpts = config['interface'] as AddonConfigInterface | false;
+
+    if (interfaceOpts) {
+        const scriptInterfaces = {};
+
+        if ((interfaceOpts['autoGenerate'] ?? true) || interfaceOpts['instanceName']) {
+            scriptInterfaces['instance'] = interfaceOpts['instanceName'] ?? config['id'];
+        }
+
+        if (interfaceOpts['objectTypeName']) {
+            scriptInterfaces['objectType'] = interfaceOpts['objectTypeName'];
+        }
+
+        if (interfaceOpts['pluginName']) {
+            scriptInterfaces['plugin'] = interfaceOpts['pluginName'];
+        }
+
+        info['SetScriptInterfaceNames'](scriptInterfaces);
+    }
+
     if (config['typeDefs']) {
         info['SetTypeScriptDefinitionFiles'](config['typeDefs']);
     }

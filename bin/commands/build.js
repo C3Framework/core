@@ -19,12 +19,14 @@ import {
 } from 'fs';
 
 import {
+    endsWithDot,
     escapeRegExp,
     filepath,
     lowerFirst,
     removeFilesRecursively,
     sleep,
-    titleCase
+    titleCase,
+    wordWrap
 } from '../lib/utils.js';
 
 import {
@@ -266,6 +268,7 @@ async function addonFromConfig(config, addon) {
             // TODO: Add language list
             addon.icon ? addon.icon : "icon.svg",
             ...Object.keys(addon.fileDependencies),
+            ...addon.typeDefs,
         ],
     };
 }
@@ -994,6 +997,193 @@ export async function writeAddonConfig() {
     writeFileSync(filepath(config.exportPath, "addon.json"), JSON.stringify(await addonFromConfig(config, addonJson), null, 2))
 }
 
+function instanceShouldExtendClass() {
+    const config = bc();
+
+    if (addonJson.interface?.instanceParentName) {
+        return addonJson.interface.instanceParentName;
+    }
+
+    if (addonJson.addonType === 'plugin') {
+        const pluginTypes = {
+            "object": "IWorldInstance", // Yep everyting is IWorldInstance in C3, even non-world plugins
+            "world": "IWorldInstance",
+            "dom": "IDOMInstance",
+        };
+
+        return pluginTypes[addonJson.type];
+    }
+
+    return "IBehaviorInstance";
+}
+
+export function writeAddonScriptingInterface() {
+    const config = bc();
+
+    const opts = typeof addonJson.interface !== 'object' ? {} : addonJson.interface;
+
+    const className = opts.instanceName ?? addonJson.id;
+    const eventMapName = `${className}EventMap`;
+    const isBehavior = addonJson.addonType === 'behavior';
+    const generic = isBehavior ? '<InstType>' : '';
+    const parentClassName = instanceShouldExtendClass();
+
+    let ts = '';
+    const TAB = '  ';
+
+    const registerTriggers = opts.autoGenerateTriggers ?? true;
+    const triggers = [];
+
+    function generateDocBlock(content = [], tabs = 0, end = undefined) {
+        content = typeof content === 'string' ? [content] : content;
+
+        let indentation = '';
+        for (let i = 0; i < tabs; i++) {
+            indentation += TAB;
+        }
+
+        const docblockBr = `\n${indentation} * `;
+
+        let docblock = '';
+
+        docblock += `${indentation}/**`;
+
+        content.forEach((line) => {
+            line = line.trim()
+
+            if (!line) return docblock += docblockBr;
+
+            docblock += docblockBr + wordWrap(line, 100, docblockBr)
+        });
+
+        if (end) {
+            const added = end(indentation);
+            docblock += added !== undefined ? added : '';
+        }
+
+        docblock += `\n${indentation} */\n`;
+
+        return docblock;
+    }
+
+    ts += generateDocBlock([
+        `Represents an instance of the plugin ${addonJson.id}.`,
+        '',
+        `@description ${endsWithDot(addonJson.description)}`,
+        `@version ${addonJson.version}`
+    ])
+
+    ts += `declare class ${className}${generic} extends ${parentClassName}${generic}\n{\n`;
+
+    if (registerTriggers) {
+        if (isBehavior) {
+            ts += `${TAB}addEventListener<K extends keyof ${eventMapName}<InstType, this>>(type: K, listener: (ev: ${eventMapName}<InstType, this>[K]) => any): void;\n`
+            ts += `${TAB}removeEventListener<K extends keyof ${eventMapName}<InstType, this>>(type: K, listener: (ev: ${eventMapName}<InstType, this>[K]) => any): void;\n`
+        } else {
+            ts += `${TAB}addEventListener<K extends keyof ${eventMapName}<this>>(type: K, listener: (ev: ${eventMapName}<this>[K]) => any): void;\n`
+            ts += `${TAB}removeEventListener<K extends keyof ${eventMapName}<this>>(type: K, listener: (ev: ${eventMapName}<this>[K]) => any): void;\n`
+        }
+
+        ts += '\n';
+    }
+
+    for (const categoryName in aces) {
+        for (const type in aces[categoryName]) {
+            const definitions = aces[categoryName][type]
+
+            definitions.forEach((definition) => {
+                if (definition.isTrigger && registerTriggers) {
+                    triggers.push(definition);
+                    return;
+                }
+
+                let isAsync = definition.isAsync;
+
+                if (definition.description) {
+                    ts += generateDocBlock(definition.description, 1, (docblockBr) => {
+                        if (definition.deprecated) {
+                            return docblockBr + '@deprecated'
+                        }
+                    })
+                }
+
+                ts += TAB;
+
+                if (isAsync) {
+                    ts += "async ";
+                }
+
+                ts += definition.scriptName;
+
+                if (!definition.params?.length) {
+                    ts += '()'
+                } else {
+                    ts += '(';
+
+                    definition.params.forEach((paramDef) => {
+                        ts += '\n';
+
+                        if (paramDef.desc) {
+                            ts += `${TAB}${TAB}/** ${paramDef.desc} */\n`;
+                        }
+
+                        ts += `${TAB}${TAB}${paramDef.id}: ${paramDef.type}`;
+
+                        let value = paramDef.initialValue
+
+                        if (value) {
+                            if (!value.match(/"[^"]*"|'[^']*'/)) {
+                                value = JSON.stringify(value);
+                            }
+
+                            ts += ` = ${value}`;
+                        }
+
+                        ts += ','
+                    })
+                    ts += `\n${TAB})`;
+                }
+
+                // Return type
+                const returnType = definition.returnType ?? 'void';
+                ts += `: `;
+                ts += isAsync ? `Promise<${returnType}>` : returnType;
+                ts += '; \n\n';
+            });
+        }
+    }
+
+    ts += '}\n';
+
+    if (registerTriggers) {
+        let triggersTs = '';
+
+        if (isBehavior) {
+            triggersTs += `interface ${eventMapName}<InstType, BehInstType> extends BehaviorInstanceEventMap<InstType, BehInstType> {\n`
+
+            triggers.forEach((trigger) => {
+                triggersTs += `${TAB}"${trigger.scriptName}": BehaviorInstanceEvent<InstType, BehInstType>;\n`
+            });
+
+            triggersTs += "}"
+        } else {
+            triggersTs += `interface ${eventMapName}<InstType = ${className}> extends WorldInstanceEventMap<InstType> {\n`;
+
+            triggers.forEach((trigger) => {
+                triggersTs += `${TAB}"${trigger.scriptName}": InstanceEvent<InstType>;\n`
+            });
+
+            triggersTs += "}"
+        }
+
+        ts = `${triggersTs}\n\n${ts}`;
+    }
+
+    ts = ts.trim() + '\n';
+
+    writeFileSync(filepath(config.exportPath, `${className}.d.ts`), ts);
+}
+
 export function writeIcon() {
     const config = bc();
 
@@ -1033,7 +1223,12 @@ async function build() {
     writeFileSync(filepath(config.exportPath, "aces.json"), JSON.stringify(acesFromConfig(aces), null, 2));
 
     writeLanguages();
+
     await writeAddonConfig();
+
+    if (addonJson.interface !== false && (addonJson.interface.autoGenerate ?? true)) {
+        writeAddonScriptingInterface();
+    }
 
     await Promise.all(
         addonJson.editorScripts?.map(async (v) => {

@@ -31,16 +31,16 @@ async function processDependencyFile(config, filename, ext, type) {
 /**
  * @param {BuildConfig} config
  */
-export function getTypeDefinitions(config) {
+export function getTypeDefinitions(config, addon) {
     const dirPath = filepath(config.defPath);
 
     if (!existsSync(dirPath)) return [];
 
+    const defPath = config.defPath;
+    const exportPath = config.exportPath;
     const definitions = readdirSync(dirPath)
         .filter((v => v.endsWith('.d.ts')))
         .map((filename) => {
-            const defPath = config.defPath;
-            const exportPath = config.exportPath;
 
             const input = filepath(defPath, '/', filename);
             const output = input.replace(dirPath, filepath(exportPath, 'c3runtime/'))
@@ -49,6 +49,10 @@ export function getTypeDefinitions(config) {
 
             return trimPathSlashes(output.replace(filepath(exportPath), ''));
         });
+
+    if (addon.interface !== false && (addon.interface.autoGenerate ?? true)) {
+        definitions.push((addon.interface.instanceName ?? addon.id) + '.d.ts');
+    }
 
     return definitions;
 }

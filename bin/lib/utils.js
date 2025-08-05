@@ -58,3 +58,39 @@ export function escapeRegExp(string) {
 export function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+export function wordWrap(str, maxWidth, newLine = '\n') {
+    if (!str || maxWidth <= 0) return '';
+
+    const words = str.split(' ');
+    let result = '';
+    let currentLine = '';
+
+    for (let word of words) {
+        if ((currentLine + word).length <= maxWidth) {
+            currentLine += (currentLine ? ' ' : '') + word;
+        } else {
+            if (currentLine) {
+                result += currentLine + newLine;
+            }
+            currentLine = word;
+        }
+    }
+
+    if (currentLine) {
+        result += currentLine;
+    }
+
+    return result;
+};
+
+
+export function endsWithDot(str) {
+    str = str.trim();
+
+    if (str.endsWith('.') || str.endsWith(':') || str.endsWith(',')) {
+        return str;
+    }
+
+    return `${str}.`
+}

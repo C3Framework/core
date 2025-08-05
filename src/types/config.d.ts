@@ -10,6 +10,15 @@ declare enum AddonTypeNamespace {
 
 type AddonTypeOpts = keyof typeof AddonType;
 
+interface AddonConfigInterface {
+    autoGenerate?: boolean,
+    autoGenerateTriggers?: boolean,
+    instanceName?: string,
+    instanceParentName?: string,
+    objectTypeName?: string,
+    pluginName?: string,
+}
+
 interface AddonConfig extends ProjectAddon {
     addonType: AddonTypeOpts;
     editorScripts?: string[];
@@ -17,6 +26,7 @@ interface AddonConfig extends ProjectAddon {
     aceCategories: {
         [key: string]: string;
     };
+    interface?: AddonConfigInterface | boolean,
     fileDependencies?: {
         [key: string]:
         | "copy-to-output"

@@ -92,9 +92,13 @@ export async function mutateAddonConfig(addon) {
     const dependencies = await getFileListFromConfig(bc, addon);
     addon.fileDependencies = dependencies;
 
-    // * Type definitions
-    const typeDefs = getTypeDefinitions(bc);
+    // * Interfaces
+    if (addon.interface === true || addon.interface === undefined) {
+        addon.interface = {};
+    }
 
+    // * Type definitions
+    const typeDefs = getTypeDefinitions(bc, addon);
     addon.typeDefs = typeDefs;
 
     return addon;
