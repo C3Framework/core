@@ -542,7 +542,6 @@ function acesFromConfig(config) {
                     const ret = {
                         id: ace.id,
                         scriptName: ace.id,
-                        expressionName: ace.id,
                     };
                     Object.keys(ace).forEach((key) => {
                         switch (key) {
@@ -558,6 +557,10 @@ function acesFromConfig(config) {
                                 ret[key] = ace[key];
                         }
                     });
+
+                    ret.expressionName = ace.scriptName;
+                    delete ret['scriptName'];
+
                     if (ace.params) {
                         ret.params = ace.params.map((param) => {
                             const ret = {};
