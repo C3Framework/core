@@ -11,12 +11,12 @@ declare enum AddonTypeNamespace {
 type AddonTypeOpts = keyof typeof AddonType;
 
 interface AddonConfigInterface {
-    autoGenerate?: boolean,
-    autoGenerateTriggers?: boolean,
-    instanceName?: string,
-    instanceParentName?: string,
-    objectTypeName?: string,
-    pluginName?: string,
+    autoGenerate?: boolean;
+    autoGenerateTriggers?: boolean;
+    instanceName?: string;
+    instanceParentName?: string;
+    objectTypeName?: string;
+    pluginName?: string;
 }
 
 type FileConfig = {
@@ -30,13 +30,13 @@ type FileConfig = {
 
 interface AddonConfig extends ProjectAddon {
     addonType: AddonTypeOpts;
-    minConstructVersion?: string,
+    minConstructVersion?: string;
     editorScripts?: string[];
     properties: Property[];
     aceCategories: {
         [key: string]: string;
     };
-    interface?: AddonConfigInterface | boolean,
+    interface?: AddonConfigInterface | boolean;
     files?: FileConfig;
     info?: {
         [x: string]: any;
@@ -63,7 +63,7 @@ interface ThemeConfig extends ProjectAddon {
 interface BehaviorConfig extends AddonConfig {
     addonType: 'behavior';
     /** @default true */
-    supportsWorkerMode?: boolean,
+    supportsWorkerMode?: boolean;
     info?: {
         Set?: {
             IsOnlyOneAllowed?: boolean;
@@ -80,7 +80,7 @@ interface PluginConfig extends AddonConfig {
     | "world"
     | "dom";
     /** @default true */
-    supportsWorkerMode?: boolean,
+    supportsWorkerMode?: boolean;
     wrapperExportProperties?: { [key: string]: Record<string, string> }
     info?: {
         defaultImageUrl?: string;
