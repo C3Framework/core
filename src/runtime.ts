@@ -1,5 +1,3 @@
-import { camelCase } from "./utils/str.js";
-
 import {
     getDebuggerProperties as C3FOGetDebuggerProperties,
     loop as C3FOLoop,
@@ -83,7 +81,8 @@ export function injectAces(addonBase: C3AddonBase & { [key: string]: any }, conf
 
     Object.keys(aces['actions']).forEach((key) => {
         const ace = aces['actions'][key];
-        addonBase['Acts'][camelCase(key)] = function (...args: any) {
+
+        addonBase['Acts'][key] = function (...args: any) {
             return ace(this).call(this, ...args);
         };
     });
@@ -91,14 +90,15 @@ export function injectAces(addonBase: C3AddonBase & { [key: string]: any }, conf
     Object.keys(aces['conditions']).forEach((key) => {
         const ace = aces['conditions'][key];
 
-        addonBase['Cnds'][camelCase(key)] = function (...args: any) {
+        addonBase['Cnds'][key] = function (...args: any) {
             return ace(this).call(this, ...args);
         };
     });
 
     Object.keys(aces['expressions']).forEach((key) => {
         const ace = aces['expressions'][key];
-        addonBase['Exps'][camelCase(key)] = function (...args: any) {
+
+        addonBase['Exps'][key] = function (...args: any) {
             return ace(this).call(this, ...args);
         };
     });

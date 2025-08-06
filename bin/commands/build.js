@@ -864,7 +864,7 @@ function parseScript(ts) {
                 }
             }
 
-            acesRuntime[aceType][id] = `(inst) => inst["${key}"]`;
+            acesRuntime[aceType][key] = `(inst) => inst["${key}"]`;
             aces[category][aceType].push({
                 ...config,
                 id,
