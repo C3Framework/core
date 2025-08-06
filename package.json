@@ -26,7 +26,14 @@
         "c3fo": "bin/c3fo.js"
     },
     "exports": {
-        ".": "./dist/core.js",
+        ".": {
+            "import": "./dist/core.js",
+            "types": "./dist/index.d.ts"
+        },
+        "./utils": {
+            "import": "./dist/utils/index.js",
+            "types": "./dist/utils/index.d.ts"
+        },
         "./package.json": "./package.json"
     },
     "files": [

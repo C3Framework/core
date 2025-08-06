@@ -1,7 +1,7 @@
-import { camelCase } from "./utils/utils.js";
+import { camelCase } from "./utils/str.js";
 
 import {
-    _getDebuggerProperties as C3FOGetDebuggerProperties,
+    getDebuggerProperties as C3FOGetDebuggerProperties,
     loop as C3FOLoop,
     trigger as C3FOTrigger
 } from "./utils/runtime.js";

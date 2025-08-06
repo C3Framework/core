@@ -3,6 +3,93 @@ enum AddonTypeNamespace {
     plugin = "Plugins",
 }
 
+
+type ExternalAddonID = string;
+type VersionConstraint = string;
+type DependencyList = Record<ExternalAddonID, VersionConstraint>;
+
+
+/**
+ * Loads a list of plugins, with an specified version constraint.
+ *
+ * Currently the constraint doesn't work, as Construct doesn't exposes that info.
+ */
+export async function dependencies<
+    T extends Array<IInstance | undefined>,
+>(inst: IInstance, list: DependencyList): Promise<readonly [...T, (customMessage?: string) => void | undefined]> {
+    const runtime = inst.runtime;
+    const id = inst.plugin.id;
+    const exportType = inst.runtime.platformInfo.exportType;
+
+    const err = (message: string) => {
+        message = `[${id}]: ${message}`;
+
+        if (exportType === 'preview') {
+            alert(message);
+            throw new Error(message);
+        } else {
+            console.warn(message);
+        }
+    }
+
+    const checkForDependencies = () => {
+        const objects = Object.values(runtime.objects) as ISDKObjectTypeBase_<IInstance>[];
+        const addonsFound = [] as T;
+        const allMissing = [];
+        const requiredMissing = [];
+
+        for (const addonID in list) {
+            const version = list[addonID];
+            const isOptional = version.startsWith('?');
+
+            const foundIndex = objects.findIndex((obj) => obj.plugin.id === addonID);
+
+            if (foundIndex >= 0) {
+                addonsFound.push(objects[foundIndex].getFirstInstance())
+                delete objects[foundIndex];
+            } else {
+                allMissing.push(addonID);
+
+                if (!isOptional) requiredMissing.push(addonID);
+
+                addonsFound.push(undefined);
+            }
+        }
+
+        const len = requiredMissing.length;
+        if (len) {
+            if (len > 1) {
+                err('Several addons are required and were not found: ' + requiredMissing.join(', ') + '. Please include them first.');
+            } else {
+                err('The following addon is required and was not found: ' + requiredMissing[0] + '. Please include it first.');
+            }
+        }
+
+
+        let optionalCallback: (customMessage?: string) => void | undefined = undefined;
+
+        if (allMissing.length > requiredMissing.length) {
+            optionalCallback = (customMessage: string | undefined = undefined) => {
+                const message = customMessage ?? 'Several addons are required and were not found: ' + requiredMissing.join(', ') + '. Please include them first.'
+                err(message);
+            }
+        }
+
+
+        return [...addonsFound, optionalCallback] as const;
+    }
+
+    if (runtime.loadingProgress === 1) {
+        return checkForDependencies();
+    }
+
+    return new Promise((resolve, value) => {
+        runtime.addEventListener('beforeprojectstart', () => {
+            resolve(checkForDependencies());
+        });
+    })
+}
+
 /**  @internal */
 export function trigger(
     inst: any,
@@ -24,7 +111,7 @@ export function trigger(
 }
 
 /** @internal */
-export function _getDebuggerProperties(inst: any, config: AddonConfig) {
+export function getDebuggerProperties(inst: any, config: AddonConfig) {
     const getDebugProps = inst._debugProperties ?? inst.debugProperties;
 
     if (!getDebugProps) return [];

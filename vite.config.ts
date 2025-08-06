@@ -7,7 +7,10 @@ import pkg from './package.json' with { type: 'json' }
 export default defineConfig({
     build: {
         lib: {
-            entry: './src/index.ts',
+            entry: {
+                core: './src/index.ts',
+                'utils/index': './src/utils/index.ts'
+            },
             formats: ['es'], // pure ESM package
         },
         rollupOptions: {
