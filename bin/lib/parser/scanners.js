@@ -65,7 +65,10 @@ export function getTypeDefinitions(config, addon) {
 export async function getFileListFromConfig(config, addon) {
     const exportPath = filepath(config.exportPath);
     const libPath = filepath(config.libPath);
-    const copyConfig = { ...(addon?.fileDependencies ?? {}) };
+    const copyConfig = {
+        ...(addon.fileDependencies ? addon.fileDependencies : {}),
+        ...addon.files,
+    };
 
     if (!existsSync(libPath)) return {};
 

@@ -73,9 +73,13 @@ export function registerEditorClass(inst: any, SDK: any, config: BuiltAddonConfi
         );
     }
 
-    if (config['fileDependencies'] && Object.keys(config['fileDependencies'])?.length) {
-        const fileDependencies = config['fileDependencies']!;
+    const files = {
+        ...(config['fileDependencies'] ? config['fileDependencies'] : {}),
+        ...config['files'],
+    }
+    const filesKeys = Object.keys(files);
 
+    if (filesKeys.length) {
         function getMimeType(filename: string): string {
             const mimeTypes: Record<string, string> = {
                 'txt': 'text/plain',
@@ -109,8 +113,8 @@ export function registerEditorClass(inst: any, SDK: any, config: BuiltAddonConfi
             return ext && mimeTypes[ext] ? mimeTypes[ext] : 'application/octet-stream';
         }
 
-        Object.keys(fileDependencies).forEach((filename: any) => {
-            const type = fileDependencies[filename];
+        filesKeys.forEach((filename: any) => {
+            const type = files[filename];
             const dependency = {
                 filename,
                 type

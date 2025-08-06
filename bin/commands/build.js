@@ -269,7 +269,7 @@ async function addonFromConfig(config, addon) {
             ...getLangs().map((v) => `lang/${v}.json`),
             // TODO: Add language list
             addon.icon ? addon.icon : "icon.svg",
-            ...Object.keys(addon.fileDependencies),
+            ...Object.keys(addon.files),
             ...addon.typeDefs,
         ],
     };

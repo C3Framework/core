@@ -88,9 +88,9 @@ async function addonScriptToObject(tsAddonConfig = '') {
 export async function mutateAddonConfig(addon) {
     const bc = buildConfig();
 
-    // * Dependencies files
-    const dependencies = await getFileListFromConfig(bc, addon);
-    addon.fileDependencies = dependencies;
+    // * Files List
+    const fileList = await getFileListFromConfig(bc, addon);
+    addon.files = fileList;
 
     // * Interfaces
     if (addon.interface === true || addon.interface === undefined) {

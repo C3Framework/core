@@ -19,6 +19,15 @@ interface AddonConfigInterface {
     pluginName?: string,
 }
 
+type FileConfig = {
+    [key: string]:
+    | "copy-to-output"
+    | "inline-script"
+    | "external-dom-script"
+    | "external-runtime-script"
+    | "external-css";
+};
+
 interface AddonConfig extends ProjectAddon {
     addonType: AddonTypeOpts;
     minConstructVersion?: string,
@@ -28,14 +37,7 @@ interface AddonConfig extends ProjectAddon {
         [key: string]: string;
     };
     interface?: AddonConfigInterface | boolean,
-    fileDependencies?: {
-        [key: string]:
-        | "copy-to-output"
-        | "inline-script"
-        | "external-dom-script"
-        | "external-runtime-script"
-        | "external-css";
-    };
+    files?: FileConfig;
     info?: {
         [x: string]: any;
         Set?: {
@@ -43,6 +45,8 @@ interface AddonConfig extends ProjectAddon {
             IsDeprecated?: boolean;
         };
     };
+    /** @deprecated Use `files` instead. */
+    fileDependencies?: FileConfig;
 }
 
 type ThemeColors = {
