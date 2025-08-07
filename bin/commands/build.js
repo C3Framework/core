@@ -670,9 +670,13 @@ function distribute(config, addon) {
     zipFolder();
 }
 
-// Collection of ACEs by group for aces.json
+/** Collection of ACEs by group for aces.json */
 let aces = {};
-// Collection of ACEs to call on runtime
+/**
+ * @type {Map<object,{method: import('acorn').Node, params: Map<object, import('acorn').Node>}>} Original AST nodes of the ACEs
+ */
+const acesAST = new Map();
+/** Collection of ACEs to call on runtime */
 export let acesRuntime = aceDict();
 
 function hasDecorators(ts = '') {
@@ -851,7 +855,7 @@ function parseScript(ts) {
 
             const category = config.category ?? 'general';
 
-            const params = method.params?.map((v) => {
+            const paramsAST = method.params?.map((v) => {
                 if (v.decorators) {
                     v.decorators.forEach(v => removeDecorator(v));
                 }
@@ -860,8 +864,15 @@ function parseScript(ts) {
                     return null;
                 }
 
-                return formatParam(v, id);
+                return v;
             }).filter((v) => v) ?? [];
+            const paramsASTMap = new Map()
+
+            const params = paramsAST.map((node) => {
+                const param = formatParam(node, id);
+                paramsASTMap.set(param, node)
+                return param;
+            });
 
             const { displayText, listName } = getTitlesFromACE(config, id, title, params, decoratorName === "Expression");
 
@@ -873,7 +884,8 @@ function parseScript(ts) {
             }
 
             acesRuntime[aceType][key] = `(inst) => inst["${key}"]`;
-            aces[category][aceType].push({
+
+            const ace = {
                 ...config,
                 id,
                 scriptName: key,
@@ -883,9 +895,17 @@ function parseScript(ts) {
                 params,
                 description: config.description ?? '',
                 ...(returnType ? { returnType } : {}),
+            };
+
+            acesAST.set(ace, {
+                method,
+                params: paramsASTMap
             });
+
+            aces[category][aceType].push(ace);
         });
 
+        // TODO: Remve this
         (aceClassConfig.triggers ?? []).forEach((v) => {
             if (typeof v === typeof '') {
                 if (!v.startsWith('on')) {
@@ -1108,8 +1128,9 @@ export function writeAddonScriptingInterface() {
     for (const categoryName in aces) {
         for (const type in aces[categoryName]) {
             const definitions = aces[categoryName][type]
-
             definitions.forEach((definition) => {
+                const ast = acesAST.get(definition)
+
                 if (definition.isTrigger && registerTriggers) {
                     triggers.push(definition);
                     return;
@@ -1134,13 +1155,31 @@ export function writeAddonScriptingInterface() {
                     ts += '(';
 
                     definition.params.forEach((paramDef) => {
+                        const paramAST = ast.params.get(paramDef);
+
                         ts += '\n';
 
                         let descLines = [
                             ...(endsWithDot(paramDef.desc)).split('\n').map((v) => v.trim()).filter((v) => v)
                         ];
 
-                        if (paramDef.type === 'object') {
+                        let types = [];
+
+                        const isGenericObject = (types = []) => {
+                            for (let i = 0; i < types.length; i++) {
+                                const type = types[i];
+                                if (
+                                    type === 'IInstance' ||
+                                    type === 'IDOMInstance'
+                                ) {
+                                    return true;
+                                }
+                            }
+
+                            return false;
+                        }
+
+                        const additionalObjectTypeDocblock = () => {
                             if (descLines.length) {
                                 descLines.push('\n');
                             }
@@ -1148,6 +1187,28 @@ export function writeAddonScriptingInterface() {
                             descLines.push(
                                 `Supports: ` + (paramDef.allowedPluginIds?.join(', ')?.replace('<world>', 'IWorldInstance') ?? 'unknown') + '.'
                             );
+                        };
+
+                        if (paramDef.type === 'object') {
+                            const tsType = paramAST?.typeAnnotation?.typeAnnotation.type;
+
+                            if (tsType === 'TSUnionType') {
+                                types.push(
+                                    ...paramAST.typeAnnotation.typeAnnotation.types.map((node) => node.typeName.name)
+                                );
+                            } else if (tsType === 'TSTypeReference') {
+                                const typeName = paramAST.typeAnnotation.typeAnnotation.typeName.name;
+
+                                types.push(typeName);
+                            }
+                        }
+
+                        if (!types.length) {
+                            types.push(CASTS[paramDef.type] ?? paramDef.type);
+                        }
+
+                        if (isGenericObject(types)) {
+                            additionalObjectTypeDocblock();
                         }
 
                         let desc = descLines.filter((v) => v).join('\n').trim();
@@ -1161,9 +1222,7 @@ export function writeAddonScriptingInterface() {
                             }
                         }
 
-                        const paramType = CASTS[paramDef.type] ?? paramDef.type;
-
-                        ts += `${TAB}${TAB}${paramDef.id}: ${paramType}`;
+                        ts += `${TAB}${TAB}${paramDef.id}: ${types.join(' | ')}`;
 
                         let value = paramDef.initialValue
 
