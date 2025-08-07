@@ -1,6 +1,6 @@
 {
     "name": "@c3framework/core",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "Construct 3 Addon Development Framework",
     "license": "MIT",
     "type": "module",
@@ -18,7 +18,8 @@
         "url": "https://github.com/sponsors/LuanHimmlisch/"
     },
     "scripts": {
-        "build": "vite build"
+        "build": "vite build",
+        "publish": "npm run build && npm publish"
     },
     "main": "dist/core.js",
     "types": "dist/index.d.ts",
