@@ -21,9 +21,10 @@ interface Property {
     name: string;
     desc: string;
     type: PluginPropertyType;
-    options: PluginPropertyOptions | {
+    options: Omit<PluginPropertyOptions, "items"> | {
         linkText?: string,
-        infoText?: string
+        infoText?: string,
+        items: { [key: string]: string }
     };
 }
 
