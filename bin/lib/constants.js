@@ -26,6 +26,8 @@ export const TS_Types = {
     'TSNumberKeyword': 'number',
     'TSBooleanKeyword': 'boolean',
     'TSAnyAnnotation': 'any',
+    'TSObjectKeyword': 'object',
+    'comboGrouped': 'combo-grouped',
 };
 
 export function aceDict() {

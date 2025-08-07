@@ -61,7 +61,8 @@ interface IParam {
     desc?: string;
     type?: string | number | any | C3Type;
     initialValue?: any;
-    items?: Array<{ [key: string]: string }>;
+    items?: KeyValue[];
+    itemGroups?: { [id: string]: { '$'?: string } & KeyValue };
     allowedPluginIds?: string[];
     autocompleteId?: string | true;
 }

@@ -71,19 +71,29 @@ declare global {
 
     type combo = number;
     type cmp = number;
-    type objectname = string;
-    type layer = string;
+    type objectname = object;
+    type layer = ILayer;
     type layout = ILayout;
-    type keyb = string;
-    type instancevar = string;
-    type instancevarbool = string;
-    type eventvar = string;
-    type eventvarbool = string;
+    type keyb = number;
+
+    /** Careful, this returns an index of the instVar */
+    type instancevar = number;
+    /** Careful, this returns an index of the instVar */
+    type instancevarbool = number;
+    /** Careful, this returns an index of the instVar */
+    type objinstancevar = number;
+
+    /** This doesn't work at the moment  */
+    type eventvar = never;
+    /** This doesn't work at the moment  */
+    type eventvarbool = never;
+
     type animation = string;
-    type objinstancevar = string;
     type float = number;
     type percent = string;
     type color = string;
+    type projectfile = string;
+    type comboGrouped = number;
 
     namespace Cnd {
         type combo = globalThis.combo;
@@ -98,6 +108,7 @@ declare global {
         type eventvarbool = globalThis.eventvarbool;
         type animation = globalThis.animation;
         type objinstancevar = globalThis.objinstancevar;
+        type comboGrouped = globalThis.comboGrouped;
     }
 
     namespace Act {
@@ -113,6 +124,7 @@ declare global {
         type eventvarbool = globalThis.eventvarbool;
         type animation = globalThis.animation;
         type objinstancevar = globalThis.objinstancevar;
+        type comboGrouped = globalThis.comboGrouped;
     }
 
     namespace Effect {

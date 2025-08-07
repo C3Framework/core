@@ -84,13 +84,35 @@ function getParserType(typeArg = '') {
     let type = typeArg;
     const isNode = typeof type === typeof {};
 
+    const isAnInstanceType = (type) => {
+        return type.startsWith('I') && type.match(/^I([$A-Za-z_][0-9A-Za-z_$]*)?Instance$/);
+    }
+
+
     if (isNode) {
         type = type.typeAnnotation?.type ??
             type.typeAnnotation?.typeName?.name.toLowerCase() ??
             type.type;
 
+        if (type === 'TSUnionType') {
+            const isNotInstanceUnion = !!typeArg.typeAnnotation.types
+                .map((v) => v?.typeName?.name)
+                .map((v) => isAnInstanceType(v))
+                .filter((v) => v === false).length
+
+            if (isNotInstanceUnion) {
+                type = 'any';
+            } else {
+                type = 'object';
+            }
+        }
+
         if (type === 'TSTypeReference') {
             type = typeArg.typeAnnotation?.typeName?.name;
+
+            if (isAnInstanceType(type)) {
+                type = 'object';
+            }
         }
 
         if (type === 'Promise') {
@@ -111,7 +133,7 @@ function astToValue(ast) {
     let value;
 
     try {
-        value = eval(escodegen.generate(ast));
+        value = eval("(" + escodegen.generate(ast) + ")");
     } catch (error) {
         throw new Error(`Couldn\'t obtain value from AST`)
     }
@@ -364,7 +386,47 @@ function langFromConfig(config, addon, aces) {
                     dict[type] = [...dict[type], ...aces[k][type]];
                 }
                 return dict;
-            }, aceList());;
+            }, aceList());
+
+        const parseParams = (ace, rootAce) => {
+            ace.params = ace.params || [];
+            ace.params.forEach((param) => {
+                rootAce[ace.id].params[param.id] = {
+                    name: __(param.name),
+                    desc: __(param.desc),
+                };
+
+                if (param.type === "combo") {
+                    rootAce[ace.id].params[param.id].items = {};
+                    param.items.forEach((item) => {
+                        const itemkey = Object.keys(item)[0];
+                        rootAce[ace.id].params[param.id].items[itemkey] = __(item[itemkey]);
+                    });
+                }
+                if (param.type === "combo-grouped") {
+                    const itemGroups = rootAce[ace.id].params[param.id].itemGroups = {};
+
+                    for (const id in param.itemGroups) {
+                        let name = titleCase(id);
+                        const items = param.itemGroups[id];
+
+                        if (items['$']) {
+                            name = items['$'];
+                            delete items['$'];
+                        };
+
+                        for (const key in items) {
+                            items[key] = __(items[key]);
+                        }
+
+                        itemGroups[id] = {
+                            name,
+                            items
+                        }
+                    }
+                }
+            });
+        }
 
         root.actions = {};
         Object.keys(ungroupedAces.actions).forEach((key) => {
@@ -375,21 +437,7 @@ function langFromConfig(config, addon, aces) {
                 description: __(action.description),
                 params: {},
             };
-            action.params = action.params || [];
-            action.params.forEach((param) => {
-                root.actions[action.id].params[param.id] = {
-                    name: __(param.name),
-                    desc: __(param.desc),
-                };
-
-                if (param.type === "combo") {
-                    root.actions[action.id].params[param.id].items = {};
-                    param.items.forEach((item) => {
-                        const itemkey = Object.keys(item)[0];
-                        root.actions[action.id].params[param.id].items[itemkey] = __(item[itemkey]);
-                    });
-                }
-            });
+            parseParams(action, root.actions);
         });
 
         root.conditions = {};
@@ -401,20 +449,7 @@ function langFromConfig(config, addon, aces) {
                 description: __(condition.description),
                 params: {},
             };
-            condition.params = condition.params || [];
-            condition.params.forEach((param) => {
-                root.conditions[condition.id].params[param.id] = {
-                    name: __(param.name),
-                    desc: __(param.desc),
-                };
-                if (param.type === "combo") {
-                    root.conditions[condition.id].params[param.id].items = {};
-                    (param.items ?? []).forEach((item) => {
-                        const itemkey = Object.keys(item)[0];
-                        root.conditions[condition.id].params[param.id].items[itemkey] = __(item[itemkey]);
-                    });
-                }
-            });
+            parseParams(condition, root.conditions);
         });
 
         root.expressions = {};
@@ -425,21 +460,7 @@ function langFromConfig(config, addon, aces) {
                 description: __(expression.description),
                 params: {},
             };
-
-            expression.params = expression.params || [];
-            expression.params.forEach((param) => {
-                root.expressions[expression.id].params[param.id] = {
-                    name: __(param.name),
-                    desc: __(param.desc),
-                };
-                if (param.type === "combo") {
-                    root.expressions[expression.id].params[param.id].items = {};
-                    param.items.forEach((item) => {
-                        const itemkey = Object.keys(item)[0];
-                        root.expressions[expression.id].params[param.id].items[itemkey] = __(item[itemkey]);
-                    });
-                }
-            });
+            parseParams(expression, root.expressions);
         });
 
         configs[languageTag] = lang;
@@ -448,8 +469,47 @@ function langFromConfig(config, addon, aces) {
     return configs;
 }
 
+
 function acesFromConfig(config) {
     const aces = {};
+
+    const parseParams = (ace, ret) => {
+        if (ace.params) {
+            ret.params = ace.params.map((param) => {
+                const ret = {};
+                Object.keys(param).forEach((key) => {
+                    switch (key) {
+                        case "name":
+                        case "desc":
+                        case "items":
+                        case "itemGroups":
+                            break;
+                        default:
+                            ret[key] = param[key];
+                    }
+                });
+                if (param.items) {
+                    ret.items = param.items.map((item) => Object.keys(item)[0]);
+                }
+                if (param.itemGroups) {
+                    ret.itemGroups = [];
+
+                    for (const id in param.itemGroups) {
+                        const items = Object.keys(param.itemGroups[id]).filter((v) => v !== '$');
+
+                        ret.itemGroups.push({
+                            id,
+                            items
+                        });
+                    }
+                }
+
+                return ret;
+            });
+        }
+
+        return ret;
+    }
 
     Object.keys(config).forEach((category) => {
         aces[category] = {
@@ -473,26 +533,8 @@ function acesFromConfig(config) {
                                 ret[key] = ace[key];
                         }
                     });
-                    if (ace.params) {
-                        ret.params = ace.params.map((param) => {
-                            const ret = {};
-                            Object.keys(param).forEach((key) => {
-                                switch (key) {
-                                    case "name":
-                                    case "desc":
-                                    case "items":
-                                        break;
-                                    default:
-                                        ret[key] = param[key];
-                                }
-                            });
-                            if (param.items) {
-                                ret.items = param.items.map((item) => Object.keys(item)[0]);
-                            }
 
-                            return ret;
-                        });
-                    }
+                    parseParams(ace, ret);
                     return ret;
                 }),
             actions: config[category].actions
@@ -515,26 +557,8 @@ function acesFromConfig(config) {
                                 ret[key] = ace[key];
                         }
                     });
-                    if (ace.params) {
-                        ret.params = ace.params.map((param) => {
-                            const ret = {};
-                            Object.keys(param).forEach((key) => {
-                                switch (key) {
-                                    case "name":
-                                    case "desc":
-                                    case "items":
-                                        break;
-                                    default:
-                                        ret[key] = param[key];
-                                }
-                            });
-                            if (param.items) {
-                                ret.items = param.items.map((item) => Object.keys(item)[0]);
-                            }
 
-                            return ret;
-                        });
-                    }
+                    parseParams(ace, ret);
                     return ret;
                 }),
             expressions: config[category].expressions
@@ -561,26 +585,7 @@ function acesFromConfig(config) {
                     ret.expressionName = ace.scriptName;
                     delete ret['scriptName'];
 
-                    if (ace.params) {
-                        ret.params = ace.params.map((param) => {
-                            const ret = {};
-                            Object.keys(param).forEach((key) => {
-                                switch (key) {
-                                    case "name":
-                                    case "desc":
-                                    case "items":
-                                        break;
-                                    default:
-                                        ret[key] = param[key];
-                                }
-                            });
-                            if (param.items) {
-                                ret.items = param.items.map((item) => Object.keys(item)[0]);
-                            }
-
-                            return ret;
-                        });
-                    }
+                    parseParams(ace, ret);
                     return ret;
                 }),
         };
