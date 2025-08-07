@@ -88,6 +88,10 @@ export function wordWrap(str, maxWidth, newLine = '\n') {
 export function endsWithDot(str) {
     str = str.trim();
 
+    if (!str) {
+        return str;
+    }
+
     if (str.endsWith('.') || str.endsWith(':') || str.endsWith(',')) {
         return str;
     }

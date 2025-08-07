@@ -1100,6 +1100,11 @@ export function writeAddonScriptingInterface() {
         ts += '\n';
     }
 
+    const CASTS = {
+        'object': 'IInstance',
+        'combo-grouped': 'comboGrouped',
+    };
+
     for (const categoryName in aces) {
         for (const type in aces[categoryName]) {
             const definitions = aces[categoryName][type]
@@ -1131,11 +1136,34 @@ export function writeAddonScriptingInterface() {
                     definition.params.forEach((paramDef) => {
                         ts += '\n';
 
-                        if (paramDef.desc) {
-                            ts += `${TAB}${TAB}/** ${paramDef.desc} */\n`;
+                        let descLines = [
+                            ...(endsWithDot(paramDef.desc)).split('\n').map((v) => v.trim()).filter((v) => v)
+                        ];
+
+                        if (paramDef.type === 'object') {
+                            if (descLines.length) {
+                                descLines.push('\n');
+                            }
+
+                            descLines.push(
+                                `Supports: ` + (paramDef.allowedPluginIds?.join(', ')?.replace('<world>', 'IWorldInstance') ?? 'unknown') + '.'
+                            );
                         }
 
-                        ts += `${TAB}${TAB}${paramDef.id}: ${paramDef.type}`;
+                        let desc = descLines.filter((v) => v).join('\n').trim();
+
+                        if (desc) {
+                            if (desc.length > 100 || desc.includes('\n')) {
+                                ts += generateDocBlock(descLines, 2);
+                            } else {
+                                desc = desc.replaceAll('\n', ' ');
+                                ts += `${TAB}${TAB}/** ${desc} */\n`;
+                            }
+                        }
+
+                        const paramType = CASTS[paramDef.type] ?? paramDef.type;
+
+                        ts += `${TAB}${TAB}${paramDef.id}: ${paramType}`;
 
                         let value = paramDef.initialValue
 
@@ -1154,8 +1182,10 @@ export function writeAddonScriptingInterface() {
 
                 // Return type
                 const returnType = definition.returnType ?? 'void';
+                const returnTypeCasted = CASTS[returnType] ?? returnType;
+
                 ts += `: `;
-                ts += isAsync ? `Promise<${returnType}>` : returnType;
+                ts += isAsync ? `Promise<${returnTypeCasted}>` : returnTypeCasted;
                 ts += '; \n\n';
             });
         }
