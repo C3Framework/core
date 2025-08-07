@@ -368,10 +368,18 @@ function langFromConfig(config, addon, aces) {
                 };
                 if (property.type === "combo") {
                     root.properties[property.id].items = {};
-                    property.options.items.forEach((item) => {
-                        const key = Object.keys(item)[0];
-                        root.properties[property.id].items[key] = __(item[key]);
-                    });
+                    // Backwards compatibility
+                    if (Array.isArray(property.options.items)) {
+                        property.options.items.forEach((item) => {
+                            const key = Object.keys(item)[0];
+                            root.properties[property.id].items[key] = __(item[key]);
+                        });
+                    } else {
+                        for (const key in property.options.items) {
+                            const element = property.options.items[key];
+                            root.properties[property.id].items[key] = __(element);
+                        }
+                    }
                 } else if (property.type === "link") {
                     root.properties[property.id]["link-text"] = __(property.options.linkText);
                 } else if (property.type === "info") {
@@ -1014,7 +1022,7 @@ function parseAces(config) {
 
 export function writeLanguages() {
     const config = bc();
-    const langs = langFromConfig(config, addonJson, aces);
+    const langs = langFromConfig(config, partialAddonJson, aces);
 
     for (const lang in langs) {
         const langFile = langs[lang];

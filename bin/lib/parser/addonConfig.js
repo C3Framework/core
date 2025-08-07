@@ -43,6 +43,12 @@ export function addonToJson(addon, config = {}) {
 
             property.options[shouldBeParsed] = minified;
         }
+
+        if (property.options?.items) {
+            if (!Array.isArray(property.options.items)) {
+                property.options.items = Object.keys(property.options.items);
+            }
+        }
     }
 
     let json = JSON.stringify(addon, null, !config?.minify ? 4 : undefined);
