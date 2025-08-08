@@ -176,7 +176,7 @@ export const Behavior = {
             }
 
             _getDebuggerProperties(): any[] {
-                return C3FOGetDebuggerProperties(this, config);
+                return C3FOGetDebuggerProperties(this as any, config);
             }
         };
     }
@@ -226,7 +226,7 @@ export const Plugin = {
         // @ts-ignore
         return class extends type implements IC3FrameworkInstance {
             trigger(type: string | Function): void {
-                C3FOTrigger(this, config, type);
+                C3FOTrigger(this as unknown as ISDKInstanceBase_, config, type);
             }
 
             loop(
@@ -234,7 +234,7 @@ export const Plugin = {
                 callback: (item: any, index: number) => void,
                 onEndCallback?: () => void,
             ) {
-                C3FOLoop(this, array, callback, onEndCallback);
+                C3FOLoop(this as unknown as ISDKInstanceBase_, array, callback, onEndCallback);
             }
 
             _debugProperties(): KeyValue {
@@ -242,7 +242,7 @@ export const Plugin = {
             }
 
             _getDebuggerProperties(): any[] {
-                return C3FOGetDebuggerProperties(this, config);
+                return C3FOGetDebuggerProperties(this as unknown as ISDKInstanceBase_, config);
             }
         };
     }

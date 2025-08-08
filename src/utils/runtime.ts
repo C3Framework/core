@@ -7,7 +7,7 @@ enum AddonTypeNamespace {
 type ExternalAddonID = string;
 type VersionConstraint = string;
 type DependencyList = Record<ExternalAddonID, VersionConstraint>;
-
+type Instance = ISDKInstanceBase_ | ISDKBehaviorInstanceBase_<any>;
 
 /**
  * Loads a list of plugins, with an specified version constraint.
@@ -16,9 +16,16 @@ type DependencyList = Record<ExternalAddonID, VersionConstraint>;
  */
 export async function dependencies<
     T extends Array<IInstance | undefined>,
->(inst: IInstance, list: DependencyList): Promise<readonly [...T, (customMessage?: string) => void | undefined]> {
+>(inst: Instance, list: DependencyList): Promise<readonly [...T, (customMessage?: string) => void | undefined]> {
     const runtime = inst.runtime;
-    const id = inst.plugin.id;
+    let id: string;
+
+    if (inst instanceof IBehaviorInstance) {
+        id = inst.behavior.id;
+    } else {
+        id = inst.plugin.id;
+    }
+
     const exportType = inst.runtime.platformInfo.exportType;
 
     const err = (message: string) => {
@@ -92,7 +99,7 @@ export async function dependencies<
 
 /**  @internal */
 export function trigger(
-    inst: any,
+    inst: Instance,
     config: AddonConfig,
     type: Function | string,
 ) {
@@ -102,16 +109,15 @@ export function trigger(
         type = type.name;
     }
 
-    inst.dispatchEvent(new C3.Event(type));
-    inst._trigger(
-        C3[
-            AddonTypeNamespace[config.addonType]
-        ][config.id].Cnds[type],
-    );
+    inst.dispatchEvent(new C3.Event(type, true));
+    inst._trigger(C3[AddonTypeNamespace[config.addonType]][config.id].Cnds[type],);
 }
 
 /** @internal */
-export function getDebuggerProperties(inst: any, config: AddonConfig) {
+export function getDebuggerProperties(
+    inst: { _debugProperties?: () => any[], debugProperties?: () => any[] } & Instance,
+    config: AddonConfig
+) {
     const getDebugProps = inst._debugProperties ?? inst.debugProperties;
 
     if (!getDebugProps) return [];
@@ -154,7 +160,7 @@ export function getDebuggerProperties(inst: any, config: AddonConfig) {
 }
 
 export function loop(
-    inst: any,
+    inst: Instance,
     array: any[],
     callback: (item: any, index: number) => void,
     onEndCallback?: () => void,
