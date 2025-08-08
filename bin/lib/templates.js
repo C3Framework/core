@@ -4,7 +4,7 @@ import { escapeRegExp } from './utils.js';
 
 /** @returns {string} */
 export function template(path, opts = {}) {
-    path = join(import.meta.dirname, '../templates', path);
+    path = join(import.meta.dirname, '../../templates', path);
 
     const content = readFileSync(path, { encoding: 'utf-8' });
 
