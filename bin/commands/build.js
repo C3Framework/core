@@ -591,7 +591,7 @@ function acesFromConfig(config) {
                     });
 
                     ret.expressionName = ace.scriptName;
-                    delete ret['scriptName'];
+                    // delete ret['scriptName'];
 
                     parseParams(ace, ret);
                     return ret;
