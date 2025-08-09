@@ -1232,7 +1232,7 @@ export function writeAddonScriptingInterface() {
 
                         ts += `${TAB}${TAB}${paramDef.id}: ${types.join(' | ')}`;
 
-                        let value = paramDef.initialValue
+                        let value = `${paramDef.initialValue}`;
 
                         if (value) {
                             if (!value.match(/"[^"]*"|'[^']*'/)) {
