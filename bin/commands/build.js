@@ -26,6 +26,7 @@ import {
     removeFilesRecursively,
     sleep,
     titleCase,
+    ucFirst,
     wordWrap
 } from '../lib/utils.js';
 
@@ -744,10 +745,29 @@ function getTitlesFromACE(config, id, title, params, isExpression = false) {
         (!isExpression ? displayTextStripParams(displayText) : id);
 
     return {
-        displayText: displayText.replace("{title}", title),
-        listName: listName.replace("{title}", title),
+        displayText: displayText,
+        listName: listName,
+    }
+}
+
+function injectVariablesTo(obj, vars) {
+    const regexMap = new Map();
+    for (const variable in vars) {
+        const regex = new RegExp(`{\\s*${escapeRegExp(variable)}\\s*}`, 'g');
+        regexMap.set(regex, vars[variable]);
     }
 
+    for (const key in obj) {
+        let text = obj[key];
+
+        for (const [regex, value] of regexMap) {
+            text = text.replace(regex, value);
+        }
+
+        obj[key] = text;
+    }
+
+    return obj;
 }
 
 function searchACE(aceType, regex) {
@@ -897,11 +917,24 @@ function parseScript(ts) {
                 ...config,
                 id,
                 scriptName: key,
-                displayText,
-                listName,
+                ...injectVariablesTo({
+                    displayText,
+                    listName,
+                    description: config.description ?? '',
+                }, {
+                    id,
+                    displayText,
+                    listName,
+                    title,
+                    titleLower: title.toLowerCase(),
+                    titleUcFirst: ucFirst(title),
+                    category,
+                    categoryTitle: titleCase(category),
+                    categoryTitleLower: titleCase(category).toLowerCase(),
+                    categoryUcFirst: ucFirst(titleCase(category)),
+                }),
                 category,
                 params,
-                description: config.description ?? '',
                 ...(returnType ? { returnType } : {}),
             };
 

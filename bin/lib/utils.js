@@ -11,6 +11,12 @@ export function titleCase(str) {
     );
 }
 
+export function ucFirst(str = '') {
+    str = str.toLocaleLowerCase();
+
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export function lowerFirst(str = '') {
     return str.charAt(0).toLowerCase() + str.substring(1);
 }
