@@ -32,6 +32,7 @@ interface AddonConfig extends ProjectAddon {
     addonType: AddonTypeOpts;
     minConstructVersion?: string;
     editorScripts?: string[];
+    domSideScripts?: string[];
     properties: Property[];
     aceCategories: {
         [key: string]: string;
