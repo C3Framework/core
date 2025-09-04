@@ -244,7 +244,7 @@ export const EditorPlugin = {
 
                 if (config['domSideScripts']) {
                     info['SetDOMSideScripts'](
-                        config['domSideScripts'].map((s: string) => `c3runtime/${s}`),
+                        config['domSideScripts'],
                     );
                 }
 

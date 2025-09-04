@@ -280,6 +280,7 @@ async function addonFromConfig(config, addon) {
             ...(addon.addonType !== 'theme' ? [
                 "aces.json",
                 ...(addon?.editorScripts ?? []),
+                ...(addon?.domSideScripts ?? []),
                 "c3runtime/actions.js",
                 "c3runtime/conditions.js",
                 "c3runtime/expressions.js",
@@ -1368,8 +1369,17 @@ async function build() {
         writeAddonScriptingInterface();
     }
 
-    await Promise.all(
-        addonJson.editorScripts?.map(async (v) => {
+    await writeScripts(addonJson.editorScripts);
+    await writeScripts(addonJson.domSideScripts);
+
+    writeIcon();
+}
+
+function writeScripts(scripts = []) {
+    const config = bc();
+
+    return Promise.all(
+        scripts?.map(async (v) => {
             if (!v.match(/\.(js|ts)$/)) {
                 throw new Error(`Editor script path '${v}' is neither a JavaScript nor TypeScript path`);
             }
@@ -1385,8 +1395,6 @@ async function build() {
             });
         }) ?? []
     );
-
-    writeIcon();
 }
 
 async function runServer(callback = async () => { }, {
