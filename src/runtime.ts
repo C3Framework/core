@@ -154,7 +154,7 @@ export const Behavior = {
         };
     },
 
-    Instance<T extends InstanceClasses>(
+    Instance<T = InstanceClasses>(
         config: BuiltAddonConfig,
     ) {
         return class instance extends globalThis.ISDKBehaviorInstanceBase<T>
