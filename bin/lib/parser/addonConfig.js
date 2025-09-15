@@ -36,9 +36,23 @@ export function addonToJson(addon, config = {}) {
         }[property.type];
 
         if (shouldBeParsed) {
-            const ast = parseJs(property.options[shouldBeParsed] ?? '() => {}', {
-                ecmaVersion: '2022',
-            });
+            const callback = property.options[shouldBeParsed];
+            const callbackString = callback ? `${callback}` : '() => {}';
+
+            let ast;
+
+            try {
+                ast = parseJs(callbackString, {
+                    ecmaVersion: '2022',
+                });
+            } catch (error) {
+                if (!callbackString.match(/\)\s*=>\s*{/)) {
+                    throw new SyntaxError(`Parsing addon property failed. Be sure to use lambda expressions to declare callbacks:\n\`\`\`js\n${shouldBeParsed}: () => {}\n\`\`\``);
+                } else {
+                    throw new SyntaxError(`Parsing addon property failed.\nTrying to parse string: \n\`\`\`js\n${callbackString}\n\`\`\`\nwith unexpected token at ${error.loc.line}:${error.loc.column}`);
+                }
+            }
+
             const minified = escodegen.generate(ast, { format: { compact: true, semicolons: false } });
 
             property.options[shouldBeParsed] = minified;
@@ -60,7 +74,7 @@ export function addonToJson(addon, config = {}) {
 
         return p2;
     }).replace(
-        /"(linkCallback|infoCallback)": "(.*)",?$/gm, '"$1": $2'
+        /"(linkCallback|infoCallback)": "(.*)",?$/gm, '"$1": $2,'
     );
 
     return json;
