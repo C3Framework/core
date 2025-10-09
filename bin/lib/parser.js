@@ -69,8 +69,8 @@ export async function buildFile(file = '', config = {}, plugins = []) {
         bundle: true,
         allowOverwrite: true,
         plugins: [
-            parserAddon(config),
             ...plugins,
+            parserAddon(config),
         ],
         format: 'iife',
         write: false,
