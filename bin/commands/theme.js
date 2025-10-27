@@ -1,5 +1,5 @@
 import { buildConfig as bc, loadBuildConfig } from '../lib/config.js';
-import { addonJson, loadAddonConfig, setAddonJson } from "../lib/parser.js";
+import { addonJson, loadAddonConfig, partialAddonJson, setAddonJson, setPartialAddonJson } from "../lib/parser.js";
 import { filepath, removeFilesRecursively, titleCase } from '../lib/utils.js';
 import {
     copyFileSync,
@@ -190,6 +190,7 @@ export async function buildTheme() {
 
     /** @returns {import('../../ts/types/config.js').ThemeConfig} */
     const cloneConfig = () => JSON.parse(JSON.stringify(themeJson));
+    const clonePartialConfig = () => JSON.parse(JSON.stringify(partialAddonJson));
 
     const primary = themeJson.colors?.pallete?.primary.toLowerCase();
 
@@ -256,6 +257,11 @@ export async function buildTheme() {
                 ...theme,
                 variants
             };
+
+            const partial = clonePartialConfig()
+            partial.id = theme.id;
+
+            setPartialAddonJson(partial)
             setAddonJson(themeJson);
 
             config.exportPath = join(originalConfig.exportPath, theme.id);
