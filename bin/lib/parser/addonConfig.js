@@ -118,8 +118,12 @@ export async function mutateAddonConfig(addon) {
     }
 
     // * Type definitions
-    const typeDefs = getTypeDefinitions(bc, addon);
-    addon.typeDefs = typeDefs;
+    if (addon.addonType === 'theme') {
+        addon.typeDefs = [];
+    } else {
+        const typeDefs = getTypeDefinitions(bc, addon);
+        addon.typeDefs = typeDefs;
+    }
 
     return addon;
 }
