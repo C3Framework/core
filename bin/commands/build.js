@@ -1266,11 +1266,17 @@ export function writeAddonScriptingInterface() {
 
                         ts += `${TAB}${TAB}${paramDef.id}: ${types.join(' | ')}`;
 
-                        let value = `${paramDef.initialValue}`;
+                        let value = paramDef.initialValue;
 
                         if (value) {
-                            if (!value.match(/"[^"]*"|'[^']*'/)) {
-                                value = JSON.stringify(value);
+                            if (
+                                typeof value !== 'boolean' &&
+                                typeof value !== 'number'
+                            ) {
+                                value = `${value}`;
+                                if (!value.match(/"[^"]*"|'[^']*'/)) {
+                                    value = JSON.stringify(value);
+                                }
                             }
 
                             ts += ` = ${value}`;
