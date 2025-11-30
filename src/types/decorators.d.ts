@@ -65,6 +65,7 @@ interface IParam {
     itemGroups?: { [id: string]: { '$'?: string } & KeyValue };
     allowedPluginIds?: string[];
     autocompleteId?: string | true;
+    filter?: string;
 }
 
 interface ITriggerSimple extends ICondition {

@@ -125,6 +125,7 @@ declare global {
         type animation = globalThis.animation;
         type objinstancevar = globalThis.objinstancevar;
         type comboGrouped = globalThis.comboGrouped;
+        type projectfile = globalThis.projectfile;
     }
 
     namespace Effect {
