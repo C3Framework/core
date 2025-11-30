@@ -1106,6 +1106,9 @@ export function writeAddonScriptingInterface() {
     const registerTriggers = opts.autoGenerateTriggers ?? true;
     const triggers = [];
 
+    /** @type {{[key:string]: number[]}} */
+    const enums = {};
+
     function generateDocBlock(content = [], tabs = 0, end = undefined) {
         content = typeof content === 'string' ? [content] : content;
 
@@ -1163,8 +1166,25 @@ export function writeAddonScriptingInterface() {
     }
 
     const CASTS = {
-        'object': 'IInstance',
+        'object': 'IObjectClass<IInstance>',
         'combo-grouped': 'comboGrouped',
+        'projectfile': 'string',
+        'combo': (paramDef, funcDef) => {
+            if (!paramDef.items) {
+                return 'unknown';
+            }
+
+            const paramName = titleCase(paramDef.id).replaceAll(' ', '');
+            const funcName = titleCase(funcDef.id).replaceAll(' ', '');
+
+            const enumName = `${className}_${funcName}${paramName}Enum`;
+
+            enums[enumName] = paramDef.items.map((opt) => {
+                return Object.keys(opt)[0];
+            });
+
+            return enumName;
+        },
     };
 
     for (const categoryName in aces) {
@@ -1246,7 +1266,8 @@ export function writeAddonScriptingInterface() {
                         }
 
                         if (!types.length) {
-                            types.push(CASTS[paramDef.type] ?? paramDef.type);
+                            const cast = CASTS[paramDef.type] ?? paramDef.type;
+                            types.push(typeof cast === 'function' ? cast(paramDef, definition) : cast);
                         }
 
                         if (isGenericObject(types)) {
@@ -1299,6 +1320,22 @@ export function writeAddonScriptingInterface() {
     }
 
     ts += '}\n';
+
+    const enumsTs = Object.entries(enums).map(([name, values]) => {
+        let enumTs = '';
+
+        enumTs += `declare const enum ${name} {\n`;
+
+        values.forEach((val, index) => {
+            enumTs += `${TAB}${val} = ${index},\n`;
+        });
+
+        enumTs += `}`;
+
+        return enumTs;
+    }).join('\n');
+
+    ts = `${enumsTs}\n\n${ts}`;
 
     if (registerTriggers) {
         let triggersTs = '';
