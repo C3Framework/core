@@ -1,6 +1,6 @@
 {
     "name": "@c3framework/core",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "description": "Construct 3 Addon Development Framework",
     "license": "MIT",
     "type": "module",
